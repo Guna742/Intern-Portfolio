@@ -27,9 +27,41 @@ body {
     color: var(--clr-text-primary);
     background-color: var(--clr-bg-deep);
     overflow-x: hidden;
+<<<<<<< HEAD
     animation: fadeIn var(--dur-slow) var(--ease-out) both;
 }
 
+=======
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+body.page-loaded {
+    opacity: 1;
+}
+
+body.page-exiting {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ── Page Transition Overlay ── */
+.page-transition-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--clr-bg-deep);
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.page-loaded .page-transition-overlay {
+    opacity: 0;
+}
+
+
+>>>>>>> 199b10f (added new files)
 a {
     text-decoration: none;
     color: inherit;
@@ -110,6 +142,10 @@ ol {
     overflow: hidden;
     user-select: none;
     white-space: nowrap;
+<<<<<<< HEAD
+=======
+    will-change: transform, opacity;
+>>>>>>> 199b10f (added new files)
 }
 
 .btn:active {
@@ -518,6 +554,10 @@ textarea.field-input {
     font-weight: var(--fw-bold);
     font-size: var(--fs-sm);
     flex-shrink: 0;
+<<<<<<< HEAD
+=======
+    overflow: hidden;
+>>>>>>> 199b10f (added new files)
 }
 
 .user-meta {
@@ -550,6 +590,37 @@ textarea.field-input {
     gap: var(--sp-3);
 }
 
+<<<<<<< HEAD
+=======
+/* Info Button */
+.info-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: var(--clr-text-secondary);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    cursor: pointer;
+    transition: all 0.2s var(--ease-out);
+    padding: 0;
+}
+
+.info-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--clr-accent);
+    border-color: rgba(79, 124, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.info-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+>>>>>>> 199b10f (added new files)
 .topbar-title {
     font-size: var(--fs-md);
     font-weight: var(--fw-semi);
@@ -590,6 +661,176 @@ textarea.field-input {
     font-size: var(--fs-sm);
 }
 
+<<<<<<< HEAD
+=======
+/* ── Role Status Banner ── */
+.role-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    padding: var(--sp-6) var(--sp-8);
+    border-radius: var(--radius-xl);
+    margin-bottom: var(--sp-8);
+    border: 1px solid;
+    position: relative;
+    overflow: visible;
+    backdrop-filter: blur(20px);
+    transition: transform var(--dur-normal) var(--ease-out-expo), box-shadow var(--dur-normal) var(--ease-out-expo);
+    transform-style: preserve-3d;
+    perspective: 1200px;
+    will-change: transform, box-shadow;
+}
+
+.role-banner .glare {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    border-radius: var(--radius-xl);
+}
+
+.role-banner:hover .glare {
+    opacity: 1;
+}
+
+.role-banner:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(79, 124, 255, 0.1);
+}
+
+.role-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    background-size: 200% 100%;
+    animation: mesh-gradient 4s linear infinite;
+    pointer-events: none;
+}
+
+.role-banner.admin {
+    background: linear-gradient(135deg, rgba(66, 133, 244, 0.08), rgba(124, 92, 252, 0.08));
+    border-color: rgba(66, 133, 244, 0.25);
+}
+
+.role-banner.user {
+    background: linear-gradient(135deg, rgba(52, 168, 83, 0.08), rgba(34, 211, 238, 0.08));
+    border-color: rgba(52, 168, 83, 0.2);
+}
+
+.role-banner-icon {
+    font-size: 1.75rem;
+}
+
+.role-banner-text {
+    flex: 1;
+}
+
+.role-banner-title {
+    font-size: var(--fs-base);
+    font-weight: var(--fw-semi);
+}
+
+.role-banner-sub {
+    font-size: var(--fs-xs);
+    color: var(--clr-text-muted);
+    margin-top: 2px;
+}
+
+/* ── Premium Stat Cards ── */
+.stat-card {
+    background: var(--clr-bg-surface);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-6);
+    position: relative;
+    overflow: hidden;
+    transition:
+        transform var(--dur-normal) var(--ease-out-expo),
+        box-shadow var(--dur-normal) var(--ease-out-expo),
+        background var(--dur-normal) var(--ease-out-expo);
+    transform-style: preserve-3d;
+    perspective: 1000px;
+    will-change: transform;
+}
+
+.stat-card .glare {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    border-radius: var(--radius-lg);
+}
+
+.stat-card:hover .glare {
+    opacity: 1;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px) rotateX(2deg);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    border-color: var(--clr-accent);
+}
+
+.stat-card-centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--sp-2);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: var(--sp-1);
+    transition: transform 0.3s var(--ease-spring);
+}
+
+.stat-card:hover .stat-icon {
+    transform: translateZ(20px) scale(1.1);
+}
+
+.stat-value {
+    font-size: var(--fs-3xl);
+    font-weight: var(--fw-black);
+    letter-spacing: -.02em;
+    line-height: 1;
+    margin-bottom: var(--sp-1);
+    background: linear-gradient(135deg, var(--clr-text-primary), var(--clr-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-label {
+    font-size: var(--fs-xs);
+    color: var(--clr-text-muted);
+    font-weight: var(--fw-medium);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.stat-trend {
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semi);
+    color: var(--clr-success);
+    margin-top: var(--sp-1);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+>>>>>>> 199b10f (added new files)
 /* ── Toast ── */
 .toast-container {
     position: fixed;

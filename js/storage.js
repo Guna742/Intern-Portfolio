@@ -158,6 +158,22 @@ const Storage = (() => {
         localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
     }
 
+<<<<<<< HEAD
+=======
+    function deleteProfile(userId) {
+        const profiles = getProfiles();
+        if (profiles[userId]) {
+            delete profiles[userId];
+            localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+            // Also delete their projects
+            const projects = getProjects().filter(p => p.ownerId !== userId);
+            localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+            return true;
+        }
+        return false;
+    }
+
+>>>>>>> 199b10f (added new files)
     // ── Projects ──
     function getProjects() {
         try {
@@ -190,7 +206,70 @@ const Storage = (() => {
         return getProjects().find(p => p.id === id) || null;
     }
 
+<<<<<<< HEAD
     return { seed, getProfiles, getProfile, saveProfile, getProjects, saveProject, deleteProject, getProjectById };
+=======
+    // ── Admin Profiles ──
+    const ADMIN_KEY = 'interntrack_admin';
+    function getAdminProfile(userId) {
+        try {
+            const raw = localStorage.getItem(ADMIN_KEY);
+            const admins = raw ? JSON.parse(raw) : {};
+            return admins[userId] || null;
+        } catch { return null; }
+    }
+
+    function saveAdminProfile(userId, data) {
+        try {
+            const raw = localStorage.getItem(ADMIN_KEY);
+            const admins = raw ? JSON.parse(raw) : {};
+            admins[userId] = { ...data, userId };
+            localStorage.setItem(ADMIN_KEY, JSON.stringify(admins));
+        } catch (e) { console.error('Failed to save admin profile', e); }
+    }
+
+    /** Centralized scoring logic (shared across leaderboard/profile/analytics) */
+    function computeInternScore(p) {
+        let score = 50;
+        if (p.skills?.length) score += Math.min(p.skills.length * 3, 20);
+        if (p.bio?.length > 40) score += 10;
+        if (p.internship?.company) score += 10;
+        if (p.avatar) score += 5;
+        if (p.socialLinks?.github) score += 2;
+        if (p.socialLinks?.linkedin) score += 3;
+        return Math.min(score, 100);
+    }
+
+    /** Calculate rank for a specific intern based on overall score */
+    function getInternRank(userId) {
+        const profiles = getProfiles();
+        const internList = Object.values(profiles);
+
+        const enriched = internList.map(p => ({
+            userId: p.userId,
+            score: computeInternScore(p)
+        })).sort((a, b) => b.score - a.score);
+
+        const index = enriched.findIndex(p => p.userId === userId);
+        return index > -1 ? index + 1 : null;
+    }
+
+    return {
+        seed,
+        getProfiles,
+        getProfile,
+        saveProfile,
+        deleteProfile,
+        getProjects,
+        saveProject,
+        deleteProject,
+        getProjectById,
+        getAdminProfile,
+        saveAdminProfile,
+        computeInternScore,
+        getInternRank
+    };
+>>>>>>> 199b10f (added new files)
 })();
 
 // Auto-seed on load

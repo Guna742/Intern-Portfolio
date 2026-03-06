@@ -48,6 +48,17 @@
                     <span class="topbar-title">My Profile</span>
                 </div>
                 <div class="topbar-right">
+<<<<<<< HEAD
+=======
+                    <button class="info-btn" id="info-btn" aria-label="Platform information">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="16" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12.01" y2="8" />
+                        </svg>
+                    </button>
+>>>>>>> 199b10f (added new files)
                     <span class="badge badge-admin">Admin</span>
                     <button class="btn btn-secondary btn-sm" id="logout-btn" aria-label="Sign out">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -64,7 +75,11 @@
 
         <!-- Main Content -->
         <main class="app-content" aria-label="Admin profile">
+<<<<<<< HEAD
             <div class="container">
+=======
+            <div class="container" data-reveal data-stagger>
+>>>>>>> 199b10f (added new files)
                 <div class="admin-profile-wrap">
 
                     <!-- Hero Banner -->
@@ -75,7 +90,32 @@
                         </div>
                         <div class="admin-hero-body">
                             <div class="admin-avatar-wrap">
+<<<<<<< HEAD
                                 <div class="admin-avatar" id="admin-avatar" aria-label="Admin avatar">A</div>
+=======
+                                <div class="admin-avatar" id="admin-avatar" aria-label="Admin avatar">
+                                    <span id="admin-avatar-initial">A</span>
+                                </div>
+                                <label class="avatar-upload-trigger" for="admin-avatar-input" title="Change Photo">
+                                    <div class="admin-avatar-overlay">
+                                        <svg class="camera-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                            <path
+                                                d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                                            <circle cx="12" cy="13" r="4" />
+                                        </svg>
+                                    </div>
+                                </label>
+                                <input type="file" id="admin-avatar-input" accept="image/*" style="display:none">
+                                <button type="button" class="avatar-remove-btn" id="avatar-remove-btn"
+                                    title="Remove Photo">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.5">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+>>>>>>> 199b10f (added new files)
                                 <div class="admin-avatar-badge" aria-label="Administrator badge">⭐</div>
                             </div>
                             <div class="admin-info">
@@ -86,7 +126,11 @@
                                         <path
                                             d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                     </svg>
+<<<<<<< HEAD
                                     Administrator
+=======
+                                    <span id="admin-role-tag-text">Administrator</span>
+>>>>>>> 199b10f (added new files)
                                 </div>
                                 <div class="admin-email-row">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -99,6 +143,17 @@
                                 </div>
                             </div>
                             <div class="admin-hero-actions">
+<<<<<<< HEAD
+=======
+                                <button class="btn btn-secondary btn-sm" id="edit-profile-btn">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" aria-hidden="true">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                    </svg>
+                                    Edit Profile
+                                </button>
+>>>>>>> 199b10f (added new files)
                                 <a href="profile-builder.html" class="btn btn-secondary btn-sm">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                         stroke-width="2" aria-hidden="true">
@@ -184,11 +239,29 @@
                                         </div>
                                         <div class="admin-info-row">
                                             <div class="admin-info-label">Email</div>
+<<<<<<< HEAD
                                             <div class="admin-info-value" id="info-email">admin@interntrack.com</div>
                                         </div>
                                         <div class="admin-info-row">
                                             <div class="admin-info-label">Role</div>
                                             <div class="admin-info-value">Administrator</div>
+=======
+                                            <div class="email-edit-wrap">
+                                                <input class="name-edit-input" id="email-edit-field" type="email"
+                                                    value="admin@interntrack.com" aria-label="Edit email">
+                                                <button class="name-edit-btn" id="email-save-btn"
+                                                    aria-label="Save email">Save</button>
+                                            </div>
+                                        </div>
+                                        <div class="admin-info-row">
+                                            <div class="admin-info-label">Role</div>
+                                            <div class="role-edit-wrap">
+                                                <input class="name-edit-input" id="role-edit-field" type="text"
+                                                    value="Administrator" aria-label="Edit role">
+                                                <button class="name-edit-btn" id="role-save-btn"
+                                                    aria-label="Save role">Save</button>
+                                            </div>
+>>>>>>> 199b10f (added new files)
                                         </div>
                                         <div class="admin-info-row">
                                             <div class="admin-info-label">Session Started</div>
@@ -274,11 +347,19 @@
 
     <div class="toast-container" id="toast-container" aria-live="polite"></div>
 
+<<<<<<< HEAD
+=======
+    <script src="js/page-transition.js"></script>
+>>>>>>> 199b10f (added new files)
     <script src="js/auth.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/admin-popup.js"></script>
     <script src="js/admin-profile.js"></script>
     <script src="js/theme-switcher.js"></script>
+<<<<<<< HEAD
+=======
+    <script src="js/animation-engine.js"></script>
+>>>>>>> 199b10f (added new files)
 </body>
 
 </html>

@@ -168,6 +168,22 @@
                 ${sparklineSVG('#f59e0b')}
             </div>
 
+<<<<<<< HEAD
+=======
+            <div class="stat-card reveal anim-d5">
+                <div class="stat-card-head">
+                    <div class="stat-card-label">Leaderboard Rank</div>
+                    <div class="stat-card-icon" style="background:rgba(255,215,0,.12)" aria-hidden="true">🏆</div>
+                </div>
+                <div class="stat-card-value counter-num" data-target="${Storage.getInternRank ? Storage.getInternRank(p.userId) : 0}" data-prefix="#">#0</div>
+                <div class="stat-card-trend up">
+                    ${arrowUp()}
+                    <span>Rank among peers</span>
+                </div>
+                ${sparklineSVG('#FFD700')}
+            </div>
+
+>>>>>>> 199b10f (added new files)
         </div>
 
         <!-- ═══ CHARTS ROW ═══ -->
@@ -223,8 +239,13 @@
             <div class="history-head">
                 <div class="history-title">Performance Log</div>
                 <div class="history-actions">
+<<<<<<< HEAD
                     ${isAdmin ? `<a href="students.html" class="btn btn-secondary btn-sm">← Back to Interns</a>` : ''}
                     <a href="profile-builder.html?student=${p.userId}" class="btn btn-primary btn-sm">✏️ Edit Profile</a>
+=======
+                    ${isAdmin ? `<a href="students.html" class="btn btn-secondary btn-sm">← Back to Interns</a>` : `
+                    <a href="projects.html" class="btn btn-primary btn-sm">✏️ Edit Project</a>`}
+>>>>>>> 199b10f (added new files)
                 </div>
             </div>
             ${projects.length === 0 ? `
@@ -550,14 +571,24 @@
         document.querySelectorAll('.counter-num').forEach(el => {
             const target = parseInt(el.dataset.target, 10);
             const suffix = el.dataset.suffix || '';
+<<<<<<< HEAD
+=======
+            const prefix = el.dataset.prefix || '';
+>>>>>>> 199b10f (added new files)
             const dur = 900;
             const start = performance.now();
             const step = (now) => {
                 const prog = Math.min((now - start) / dur, 1);
                 const eased = 1 - Math.pow(1 - prog, 3);
+<<<<<<< HEAD
                 el.textContent = Math.floor(eased * target) + suffix;
                 if (prog < 1) requestAnimationFrame(step);
                 else el.textContent = target + suffix;
+=======
+                el.textContent = prefix + Math.floor(eased * target) + suffix;
+                if (prog < 1) requestAnimationFrame(step);
+                else el.textContent = prefix + target + suffix;
+>>>>>>> 199b10f (added new files)
             };
             requestAnimationFrame(step);
         });
@@ -685,15 +716,37 @@
         const p = isAdmin ? (Storage.getAdminProfile ? Storage.getAdminProfile(session.userId) : null) : Storage.getProfile(session.userId);
         const currentName = p?.name || session.displayName;
 
+<<<<<<< HEAD
         if (avatar) avatar.textContent = currentName[0].toUpperCase();
         if (nameEl) nameEl.textContent = currentName;
         if (roleEl) roleEl.textContent = isAdmin ? 'Administrator' : 'Intern';
+=======
+        if (avatar) {
+            if (p?.avatar) {
+                avatar.innerHTML = `<img src="${p.avatar}" alt="${currentName}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+            } else {
+                avatar.textContent = currentName[0].toUpperCase();
+            }
+        }
+        if (nameEl) nameEl.textContent = currentName;
+        if (roleEl) roleEl.textContent = isAdmin ? (p?.role || 'Administrator') : 'Intern';
+>>>>>>> 199b10f (added new files)
 
         const nav = document.getElementById('sidebar-nav');
         const items = [
             { label: 'Dashboard', href: 'dashboard.html', icon: '⊞' },
             { label: 'My Profile', href: isAdmin ? 'admin-profile.html' : 'student-profile.html', icon: '👤' },
+<<<<<<< HEAD
             ...(isAdmin ? [{ label: 'Interns', href: 'students.html', icon: '👥', active: true }] : [{ label: 'My Analytics', href: `student-analytics.html?student=${session.userId}`, icon: '📊', active: true }]),
+=======
+            ...(isAdmin
+                ? [{ label: 'Interns', href: 'students.html', icon: '👥', active: true }]
+                : [
+                    { label: 'Leaderboard', href: 'leaderboard.html', icon: '🏆' },
+                    { label: 'My Analytics', href: `student-analytics.html?student=${session.userId}`, icon: '📊', active: true }
+                ]
+            ),
+>>>>>>> 199b10f (added new files)
             { label: 'Projects', href: 'projects.html', icon: '🗂️' },
         ];
 

@@ -289,14 +289,31 @@
         const p = Storage.getAdminProfile ? Storage.getAdminProfile(session.userId) : null;
         const currentName = p?.name || session.displayName;
 
+<<<<<<< HEAD
         if (avatar) avatar.textContent = currentName[0].toUpperCase();
         if (nameEl) nameEl.textContent = currentName;
         if (roleEl) roleEl.textContent = 'Administrator';
+=======
+        if (avatar) {
+            if (p?.avatar) {
+                avatar.innerHTML = `<img src="${p.avatar}" alt="${currentName}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+            } else {
+                avatar.textContent = currentName[0].toUpperCase();
+            }
+        }
+        if (nameEl) nameEl.textContent = currentName;
+        if (roleEl) roleEl.textContent = p?.role || 'Administrator';
+
+>>>>>>> 199b10f (added new files)
 
         const items = [
             { label: 'Dashboard', href: 'dashboard.html', icon: '⊞' },
             { label: 'My Profile', href: 'admin-profile.html', icon: '👤' },
+<<<<<<< HEAD
             { label: 'Students', href: 'students.html', icon: '🎓' },
+=======
+            { label: 'Interns', href: 'students.html', icon: '👥' },
+>>>>>>> 199b10f (added new files)
             { label: 'Projects', href: 'projects.html', icon: '🗂️' },
         ];
 

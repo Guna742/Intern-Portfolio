@@ -242,14 +242,30 @@
     const p = isAdmin ? (Storage.getAdminProfile ? Storage.getAdminProfile(session.userId) : null) : Storage.getProfile(session.userId);
     const currentName = p?.name || session.displayName;
 
+<<<<<<< HEAD
     if (avatar) avatar.textContent = currentName[0].toUpperCase();
     if (nameEl) nameEl.textContent = currentName;
     if (roleEl) roleEl.textContent = isAdmin ? 'Administrator' : 'Intern';
+=======
+    if (avatar) {
+      if (p?.avatar) {
+        avatar.innerHTML = `<img src="${p.avatar}" alt="${currentName}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+      } else {
+        avatar.textContent = currentName[0].toUpperCase();
+      }
+    }
+    if (nameEl) nameEl.textContent = currentName;
+    if (roleEl) roleEl.textContent = isAdmin ? (p?.role || 'Administrator') : 'Intern';
+>>>>>>> 199b10f (added new files)
 
     const items = [
       { label: 'Dashboard', href: 'dashboard.html', icon: '⊞' },
       { label: 'My Profile', href: session.role === 'admin' ? 'admin-profile.html' : 'profile-view.html', icon: '👤' },
+<<<<<<< HEAD
       ...(session.role === 'admin' ? [{ label: 'Students', href: 'students.html', icon: '🎓' }] : []),
+=======
+      ...(session.role === 'admin' ? [{ label: 'Interns', href: 'students.html', icon: '👥' }] : []),
+>>>>>>> 199b10f (added new files)
       { label: 'Projects', href: 'projects.html', icon: '🗂️' },
     ];
 
