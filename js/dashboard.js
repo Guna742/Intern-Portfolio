@@ -68,18 +68,18 @@
 
   // ── Build Sidebar Nav ──
   const NAV_INTERN = [
-    { label: 'Dashboard', href: 'dashboard.html', icon: '⊞', active: true },
-    { label: 'My Profile', href: 'student-profile.html', icon: '👤' },
-    { label: 'Leaderboard', href: 'leaderboard.html', icon: '🏆' },
-    { label: 'My Analytics', href: `student-analytics.html?student=${session.userId}`, icon: '📊' },
-    { label: 'Projects', href: 'projects.html', icon: '🗂️' },
+    { label: 'Dashboard', href: 'dashboard.html', icon: 'grid_view', active: true },
+    { label: 'My Profile', href: 'student-profile.html', icon: 'person' },
+    { label: 'Leaderboard', href: 'leaderboard.html', icon: 'leaderboard' },
+    { label: 'My Analytics', href: `student-analytics.html?student=${session.userId}`, icon: 'analytics' },
+    { label: 'Projects', href: 'projects.html', icon: 'folder' },
   ];
 
   const NAV_ADMIN = [
-    { label: 'Dashboard', href: 'dashboard.html', icon: '⊞', active: true },
-    { label: 'My Profile', href: 'admin-profile.html', icon: '👤' },
-    { label: 'Interns', href: 'students.html', icon: '👥' },
-    { label: 'Projects', href: 'projects.html', icon: '🗂️' },
+    { label: 'Dashboard', href: 'dashboard.html', icon: 'grid_view', active: true },
+    { label: 'My Profile', href: 'admin-profile.html', icon: 'person' },
+    { label: 'Interns', href: 'students.html', icon: 'group' },
+    { label: 'Projects', href: 'projects.html', icon: 'folder' },
   ];
 
   const navItems = isAdmin ? NAV_ADMIN : NAV_INTERN;
@@ -88,7 +88,7 @@
   navItems.forEach(item => {
     navHTML += `
       <a class="nav-item${item.active ? ' active' : ''}" href="${item.href}" aria-current="${item.active ? 'page' : 'false'}">
-        <span class="nav-icon" aria-hidden="true">${item.icon}</span>
+        <span class="nav-icon" aria-hidden="true"><span class="material-symbols-outlined">${item.icon}</span></span>
         <span>${item.label}</span>
       </a>`;
   });
@@ -96,19 +96,34 @@
 
   // ── Stats ──
   const projects = Storage.getProjects();
+  const profiles = Storage.getProfiles();
+  const allProfiles = Object.values(profiles);
   const profile = Storage.getProfile(session.userId) || { skills: [] };
 
+  // Admin dynamic calculations
+  const totalInterns = allProfiles.length;
+  const totalSkills = allProfiles.reduce((acc, p) => acc + (p.skills?.length || 0), 0);
+  const avgSkills = totalInterns > 0 ? Math.round(totalSkills / totalInterns) : 0;
+
+  const ratedProjects = projects.filter(p => p.rating).length;
+  const completionRate = projects.length > 0 ? Math.round((ratedProjects / projects.length) * 100) : 0;
+
   const STATS_ADMIN = [
-    { label: 'Total Projects', value: projects.length, icon: '🗂️', color: 'accent', trend: '+2 this week', clickable: true, href: 'projects.html' },
-    { label: 'Interns', value: Object.keys(Storage.getProfiles()).length, icon: '👥', color: 'cyan', trend: 'Active', clickable: true, href: 'students.html' },
-    { label: 'Avg Skills', value: 8, icon: '⚡', color: 'violet', trend: 'Growing' },
-    { label: 'Completion', value: 87, suffix: '%', icon: '✅', color: 'success', trend: '+5% week' },
+    { label: 'Total Projects', value: projects.length, icon: 'folder', color: 'accent', trend: '+2 this week', clickable: true, href: 'projects.html' },
+    { label: 'Interns', value: totalInterns, icon: 'group', color: 'cyan', trend: 'Active', clickable: true, href: 'students.html' },
+    { label: 'Avg Skills', value: avgSkills, icon: 'bolt', color: 'violet', trend: 'Growing' },
+    { label: 'Completion', value: completionRate, suffix: '%', icon: 'task_alt', color: 'success', trend: '+5% week' },
   ];
+
+  // Intern dynamic calculations
+  const myProjects = projects.filter(p => p.ownerId === session.userId).length;
+  const teamSize = allProfiles.filter(p => p.internship?.company === (userProfile?.internship?.company || 'N/A')).length;
+
   const STATS_USER = [
-    { label: 'My Projects', value: projects.length, icon: '🗂️', color: '#8b5cf6', trend: 'Active', clickable: true, href: 'projects.html' },
-    { label: 'Skills', value: profile.skills.length, icon: '⚡', color: '#22d3ee', trend: 'Listed' },
-    { label: 'Internship', value: 1, icon: '🏢', color: '#a855f7', trend: 'In progress' },
-    { label: 'Days Left', value: 42, icon: '📅', color: '#10b981', trend: 'On track' },
+    { label: 'My Projects', value: myProjects, icon: 'folder', color: '#8b5cf6', trend: 'Active', clickable: true, href: 'projects.html' },
+    { label: 'Skills', value: profile.skills.length, icon: 'bolt', color: '#22d3ee', trend: 'Listed' },
+    { label: 'My Team', value: teamSize, icon: 'group_work', color: '#a855f7', trend: 'Collaborators' },
+    { label: 'Days Left', value: 42, icon: 'calendar_month', color: '#10b981', trend: 'On track' },
   ];
 
   const stats = isAdmin ? STATS_ADMIN : STATS_USER;
@@ -120,7 +135,9 @@
       <div class="glare" aria-hidden="true"></div>
       <div class="stat-card-head">
           <div class="stat-card-label">${s.label}</div>
-          <div class="stat-card-icon" style="background:${s.color}20" aria-hidden="true">${s.icon}</div>
+          <div class="stat-card-icon" style="background:${s.color}20" aria-hidden="true">
+            <span class="material-symbols-outlined" style="color:${s.color}">${s.icon}</span>
+          </div>
       </div>
       <div class="stat-card-value">
         <span class="counter-num" data-target="${s.value}">${s.value}</span>
@@ -172,27 +189,27 @@
 
   // ── Quick Actions ──
   const ACTIONS_ADMIN = [
-    { label: 'Profile Builder', desc: 'Edit intern profile', href: 'profile-builder.html', icon: '✏️', color: 'rgba(79,124,255,.12)' },
-    { label: 'All Projects', desc: 'Browse showcase', href: 'projects.html', icon: '🗂️', color: 'rgba(168,85,247,.08)' },
-    { label: 'Intern Roster', desc: 'View intern details', href: 'students.html', icon: '🎓', color: 'rgba(34,211,238,.1)' },
+    { label: 'Profile Builder', desc: 'Edit intern profile', href: 'profile-builder.html', icon: 'construction', color: 'rgba(79,124,255,.12)' },
+    { label: 'All Projects', desc: 'Browse showcase', href: 'projects.html', icon: 'folder_shared', color: 'rgba(168,85,247,.08)' },
+    { label: 'Intern Directory', desc: 'View intern details', href: 'students.html', icon: 'school', color: 'rgba(34,211,238,.1)' },
   ];
   const ACTIONS_USER = [
-    { label: 'My Profile', desc: 'View your portfolio', href: 'student-profile.html', icon: '👤', color: 'rgba(34,211,238,.08)' },
-    { label: 'My Analytics', desc: 'Track your performance', href: `student-analytics.html?student=${session.userId}`, icon: '📊', color: 'rgba(139,92,246,.12)' },
-    { label: 'Projects', desc: 'Browse all projects', href: 'projects.html', icon: '🗂️', color: 'rgba(79,124,255,.12)' },
+    { label: 'My Profile', desc: 'View your portfolio', href: 'student-profile.html', icon: 'person', color: 'rgba(34,211,238,.08)' },
+    { label: 'My Analytics', desc: 'Track your performance', href: `student-analytics.html?student=${session.userId}`, icon: 'analytics', color: 'rgba(139,92,246,.12)' },
+    { label: 'Projects', desc: 'Browse all projects', href: 'projects.html', icon: 'folder', color: 'rgba(79,124,255,.12)' },
   ];
   // Also update admin action to link to admin profile
-  ACTIONS_ADMIN.unshift({ label: 'My Profile', desc: 'Admin profile & stats', href: 'admin-profile.html', icon: '👤', color: 'rgba(245,158,11,.1)' });
+  ACTIONS_ADMIN.unshift({ label: 'My Profile', desc: 'Admin profile & stats', href: 'admin-profile.html', icon: 'person', color: 'rgba(245,158,11,.1)' });
 
   const actions = isAdmin ? ACTIONS_ADMIN : ACTIONS_USER;
   quickActions.innerHTML = actions.map(a => `
     <a class="action-tile btn-magnetic" href="${a.href}" aria-label="${a.label} — ${a.desc}">
-      <div class="action-icon" style="background:${a.color}" aria-hidden="true">${a.icon}</div>
+      <div class="action-icon" style="background:${a.color}" aria-hidden="true"><span class="material-symbols-outlined">${a.icon}</span></div>
       <div class="action-content">
         <div class="action-label">${a.label}</div>
         <div class="action-desc">${a.desc}</div>
       </div>
-      <svg class="arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      <span class="material-symbols-outlined arrow-icon" style="font-size: 18px;">arrow_forward</span>
     </a>
   `).join('');
 
@@ -221,6 +238,47 @@
     requestAnimationFrame(() => {
       recentProjList.querySelectorAll('.proj-item').forEach(el => el.classList.add('visible'));
     });
+  }
+
+  // ── Recent Reports (Admin Only) ──
+  if (isAdmin) {
+    const reportsCard = document.getElementById('reports-card');
+    const reportsList = document.getElementById('recent-reports-list');
+    if (reportsCard && reportsList) {
+      reportsCard.style.display = 'block';
+      const allReports = Storage.getHourlyReports();
+      const allProfiles = Storage.getProfiles();
+
+      // Sort by timestamp descending
+      const recentReports = allReports.sort((a, b) => (b.timestamp || b.createdAt) - (a.timestamp || a.createdAt)).slice(0, 5);
+
+      if (recentReports.length === 0) {
+        reportsList.innerHTML = `<p class="text-muted text-sm" style="padding:var(--sp-4) 0">No reports submitted yet.</p>`;
+      } else {
+        reportsList.innerHTML = recentReports.map((r, i) => {
+          const profile = allProfiles[r.userId] || { name: 'Unknown Intern' };
+          const time = new Date(r.timestamp || r.createdAt).toLocaleString('en-US', {
+            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+          });
+          const slotLabel = r.window === 18 ? "6:00 PM (Final)" : `${r.window}:00`;
+
+          return `
+            <div class="proj-item anim-stagger card-3d visible" style="transition-delay: ${i * 0.1}s; padding: var(--sp-3) var(--sp-4);">
+              <div class="glare" aria-hidden="true"></div>
+              <div class="proj-info" style="margin: 0; flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <span style="font-weight: 600; color: var(--clr-text-main); font-size: 0.9rem;">${profile.name}</span>
+                  <span style="font-size: 0.75rem; color: var(--clr-text-muted);">${time}</span>
+                </div>
+                <div style="font-size: 0.85rem; color: var(--clr-text-muted); line-height: 1.4;">
+                  <span style="color: var(--clr-accent); font-weight: 500;">[Slot ${slotLabel}]</span> ${r.note}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
   }
 
   // Re-init animation engine for dynamic content

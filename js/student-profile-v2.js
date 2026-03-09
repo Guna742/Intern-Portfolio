@@ -32,12 +32,18 @@
             outputEl.hidden = false;
             outputEl.innerHTML = `
             <div class="empty-state">
-                <div class="empty-icon">👤</div>
-                <div class="empty-title">Profile Not Set Up Yet</div>
-                <div class="empty-desc">Your profile data is missing. Please contact your administrator.</div>
+                <div class="empty-icon"><span class="material-symbols-outlined" style="font-size: 48px;">warning</span></div>
+                <div class="empty-title">Access Denied</div>
+                <div class="empty-desc">Your profile could not be loaded. Please try logging in again.</div>
             </div>`;
         }
     } else {
+        // Handle skeletal profiles (new users)
+        if (p._isSkeleton) {
+            delete p._isSkeleton;
+            Storage.saveProfile(session.userId, p);
+        }
+
         if (outputEl) {
             outputEl.hidden = false;
             outputEl.innerHTML = buildStudentHTML(p, session, currentProjectIdx);
@@ -77,9 +83,9 @@
         const pct = computeCompletion(p);
         const isActive = intern.endDate ? new Date(intern.endDate) >= new Date() : !!intern.company;
         const stats = [
-            { id: 'skill-stat-card', label: 'Skills Listed', value: skillCount, icon: '⚡', color: 'cyan' },
-            { id: 'project-stat-card', label: 'Projects', value: myProjects.length, icon: '🗂️', color: 'blue', clickable: true },
-            { id: 'intern-stat-card', label: isActive ? 'Active Intern' : 'Intern Status', value: isActive ? '✓' : '—', icon: '🏢', color: 'green' }
+            { id: 'skill-stat-card', label: 'Skills Listed', value: skillCount, icon: 'bolt', color: 'cyan' },
+            { id: 'project-stat-card', label: 'Projects', value: myProjects.length, icon: 'folder', color: 'blue', clickable: true },
+            { id: 'intern-stat-card', label: isActive ? 'Active Intern' : 'Intern Status', value: isActive ? '✓' : '—', icon: 'domain', color: 'green' }
         ];
 
         return `
@@ -96,25 +102,16 @@
                         <div class="student-avatar" id="student-avatar" aria-label="${p.name || 'Intern'} avatar">
                             ${p.avatar
                 ? `<img src="${p.avatar}" alt="${p.name} profile picture" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
-                : `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" aria-hidden="true">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                        <circle cx="12" cy="13" r="4"/>
-                    </svg>`}
+                : `<span class="material-symbols-outlined" style="font-size: 40px; color:rgba(255,255,255,0.4)">photo_camera</span>`}
                         </div>
                         <label class="avatar-upload-trigger" for="student-avatar-input" title="Change Photo">
                             <div class="student-avatar-overlay">
-                                <svg class="camera-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                                    <circle cx="12" cy="13" r="4" />
-                                </svg>
+                                <span class="material-symbols-outlined" style="font-size: 20px;">photo_camera</span>
                             </div>
                         </label>
                         <input type="file" id="student-avatar-input" accept="image/*" style="display:none">
                         <button type="button" class="avatar-remove-btn" id="avatar-remove-btn" title="Remove Photo">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
+                            <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
                         </button>
                         ${isActive ? `<div class="student-status-dot" title="Active Intern" aria-label="Active intern"></div>` : ''}
                     </div>
@@ -137,12 +134,12 @@
                         </div>
                         <div class="student-tagline">${p.tagline || 'Software Engineering Intern'}</div>
                         <div class="student-meta-row">
-                            ${p.location ? `<span class="student-meta-item">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                             ${p.location ? `<span class="student-meta-item">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">location_on</span>
                                 ${p.location}
                             </span>` : ''}
                             ${intern.company ? `<span class="student-meta-item">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                                <span class="material-symbols-outlined" style="font-size: 14px;">domain</span>
                                 ${intern.company}
                             </span>` : ''}
                             ${links.github ? `<a class="student-meta-item" href="${links.github}" target="_blank" rel="noopener" aria-label="GitHub">
@@ -157,11 +154,11 @@
                     </div>
                     <div class="student-hero-actions">
                         <button id="edit-profile-btn" class="btn btn-secondary btn-sm">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
                             Edit Profile
                         </button>
                         <a href="projects.html" class="btn btn-secondary btn-sm">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                            <span class="material-symbols-outlined" style="font-size: 16px;">folder</span>
                             My Projects
                         </a>
                     </div>
@@ -181,7 +178,9 @@
             <div class="student-stats-row" role="region" aria-label="Profile stats">
                 ${stats.map((s, i) => `
                     <div class="student-stat-card ${s.clickable ? 'clickable-stat' : ''}" ${s.id ? `id="${s.id}"` : ''}>
-                        <div class="student-stat-icon" style="background:rgba(${s.color === 'cyan' ? '34,211,238' : s.color === 'blue' ? '79,124,255' : '16,185,129'},.1)" aria-hidden="true">${s.icon}</div>
+                        <div class="student-stat-icon" style="background:rgba(${s.color === 'cyan' ? '34,211,238' : s.color === 'blue' ? '79,124,255' : '16,185,129'},.1)" aria-hidden="true">
+                            <span class="material-symbols-outlined" style="color:var(--clr-${s.color})">${s.icon}</span>
+                        </div>
                         <div class="student-stat-info">
                             <div class="student-stat-value">${s.value}</div>
                             <div class="student-stat-label">${s.label}</div>
@@ -198,7 +197,7 @@
                     <!-- About -->
                     <section class="student-section reveal anim-d1" aria-label="About">
                         <div class="student-section-head">
-                            <div class="student-section-icon" style="background:rgba(79,124,255,.12)" aria-hidden="true">📄</div>
+                            <div class="student-section-icon" style="background:rgba(79,124,255,.12)" aria-hidden="true"><span class="material-symbols-outlined" style="color:var(--clr-blue)">description</span></div>
                             <h2 class="student-section-title">About Me</h2>
                         </div>
                         <div class="student-section-body">
@@ -209,14 +208,14 @@
                     <!-- Skills -->
                     <section class="student-section reveal anim-d2" aria-label="Skills">
                         <div class="student-section-head">
-                            <div class="student-section-icon" style="background:rgba(34,211,238,.1)" aria-hidden="true">⚡</div>
+                            <div class="student-section-icon" style="background:rgba(34,211,238,.1)" aria-hidden="true"><span class="material-symbols-outlined" style="color:var(--clr-cyan)">bolt</span></div>
                             <h2 class="student-section-title">Technical Skills</h2>
-                            <button class="add-skill-btn" id="add-skill-btn" title="Add new skill" aria-label="Add new skill">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            <button class="add-skill-btn" id="add-skill-btn" title="Add new skill" aria-label="Add new skill" ${(p.skills || []).length === 0 ? 'hidden' : ''}>
+                                <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
                             </button>
                         </div>
                         <div class="student-section-body">
-                            <div class="inline-form" id="inline-skill-form" ${!(p.skills || []).length ? '' : 'hidden'} style="margin-bottom:var(--sp-4)">
+                            <div class="inline-form" id="inline-skill-form" ${(p.skills || []).length === 0 ? '' : 'hidden'} style="margin-bottom:var(--sp-4)">
                                 <div class="inline-form-row">
                                     <input type="text" id="new-skill-input" class="field-input" placeholder="e.g. React, Python" style="flex:1">
                                     <button class="btn btn-primary btn-sm" id="save-skill-btn">Add</button>
@@ -225,7 +224,17 @@
                             </div>
                             ${(p.skills || []).length ? `
                             <div class="skills-cloud" role="list" aria-label="Skills list">
-                                ${(p.skills).map(s => `<span class="skill-badge" role="listitem">${s}</span>`).join('')}
+                                ${(p.skills).map(s => {
+                const name = typeof s === 'object' ? s.name : s;
+                const level = typeof s === 'object' ? s.level : null;
+                return `<span class="skill-badge" role="listitem" title="${level ? `Proficiency: ${level}%` : 'Skill'}">
+                                        ${name}
+                                        ${level ? `<span class="skill-pct-tag">${level}%</span>` : ''}
+                                        <button class="skill-remove-btn" data-skill="${name}" aria-label="Remove ${name} skill">
+                                            <span class="material-symbols-outlined" style="font-size: 10px;">close</span>
+                                        </button>
+                                    </span>`;
+            }).join('')}
                             </div>
                             ` : ''}
                         </div>
@@ -234,12 +243,12 @@
                     <!-- Project Progress -->
                     <section class="student-section reveal anim-d3" aria-label="Project progress">
                         <div class="student-section-head">
-                            <div class="student-section-icon" style="background:rgba(168,85,247,.1)" aria-hidden="true">📊</div>
+                            <div class="student-section-icon" style="background:rgba(168,85,247,.1)" aria-hidden="true"><span class="material-symbols-outlined" style="color:var(--clr-violet)">analytics</span></div>
                             <h2 class="student-section-title">Project Progress</h2>
                             ${myProjects.length > 1 ? `
                             <div class="carousel-nav">
                                 <button class="nav-arrow" id="next-proj-btn" title="See Next Project" aria-label="Next Project">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                                    <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
                                 </button>
                             </div>` : ''}
                         </div>
@@ -303,7 +312,7 @@
                     <!-- Contact Details -->
                     <section class="student-section reveal anim-d1" aria-label="Contact details">
                         <div class="student-section-head">
-                            <div class="student-section-icon" style="background:rgba(16,185,129,.1)" aria-hidden="true">📋</div>
+                            <div class="student-section-icon" style="background:rgba(16,185,129,.1)" aria-hidden="true"><span class="material-symbols-outlined" style="color:var(--clr-success)">assignment</span></div>
                             <h2 class="student-section-title">Details</h2>
                         </div>
                         <div class="student-section-body">
@@ -346,8 +355,8 @@
                     </section>
 
                     <div class="student-section reveal anim-d2" style="text-align:center;padding:var(--sp-6)">
-                        <div style="font-size:2rem;margin-bottom:var(--sp-3)" aria-hidden="true">🎯</div>
-                        <div style="font-weight:var(--fw-semi);margin-bottom:var(--sp-2)">InternTrack Dashboard</div>
+                        <div style="font-size:2rem;margin-bottom:var(--sp-3)" aria-hidden="true"><span class="material-symbols-outlined" style="font-size: 40px; color:var(--clr-accent)">adjust</span></div>
+                        <div style="font-weight:var(--fw-semi);margin-bottom:var(--sp-2)">IRIS Dashboard</div>
                         <div class="text-muted text-sm" style="margin-bottom:var(--sp-4)">Your creative progress, tracked in one place.</div>
                         <a href="dashboard.html" class="btn btn-secondary btn-sm" style="width:100%">Go to Dashboard</a>
                     </div>
@@ -358,7 +367,7 @@
             <!-- Account Settings Section (Editable) -->
             <section class="student-section reveal anim-d3" id="account-settings-section" aria-label="Account Settings">
                 <div class="student-section-head">
-                    <div class="student-section-icon" style="background:rgba(255,255,255,0.05)" aria-hidden="true">⚙️</div>
+                    <div class="student-section-icon" style="background:rgba(255,255,255,0.05)" aria-hidden="true"><span class="material-symbols-outlined">settings</span></div>
                     <h2 class="student-section-title">Account Settings</h2>
                 </div>
                 <div class="student-section-body">
@@ -436,13 +445,115 @@
 
         if (saveSkillBtn && skillInput) {
             saveSkillBtn.addEventListener('click', () => {
-                const newSkill = skillInput.value;
-                if (newSkill && newSkill.trim()) {
-                    const updatedSkills = [...(p.skills || []), newSkill.trim()];
+                const name = skillInput.value.trim();
+                if (!name) {
+                    showToast('Please enter a skill name.', 'error');
+                    return;
+                }
+
+                promptSkillLevel(name, (level) => {
+                    const currentSkills = Array.isArray(p.skills) ? p.skills : [];
+                    const updatedSkills = [...currentSkills, { name, level: parseInt(level) }];
+
                     p.skills = updatedSkills;
                     Storage.saveProfile(session.userId, p);
+
+                    // Explicitly reset the form state before refreshing
+                    if (skillInput) skillInput.value = '';
+                    if (skillForm) skillForm.hidden = true;
+                    if (addSkillBtn) addSkillBtn.hidden = false;
+
                     refreshView(p, session);
+                    showToast(`Skill "${name}" added!`, 'success');
+                });
+            });
+
+            // Support Enter key
+            skillInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') saveSkillBtn.click();
+            });
+        }
+
+        // Remove skill
+        document.querySelectorAll('.skill-remove-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const skillName = btn.dataset.skill;
+                if (confirm(`Remove skill "${skillName}"?`)) {
+                    p.skills = (p.skills || []).filter(s => (typeof s === 'object' ? s.name : s) !== skillName);
+                    Storage.saveProfile(session.userId, p);
+                    refreshView(p, session);
+                    showToast(`Skill "${skillName}" removed.`, 'info');
                 }
+            });
+        });
+
+        function promptSkillLevel(skillName, onSave) {
+            let modal = document.getElementById('skill-level-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'skill-level-modal';
+                modal.className = 'skill-modal-overlay';
+                document.body.appendChild(modal);
+            }
+
+            // Use a fresh innerHTML to clear old listeners inside the card
+            modal.innerHTML = `
+                <div class="skill-modal-card reveal visible">
+                    <div class="skill-modal-header">
+                        <h3 class="skill-modal-title">Expertise Level</h3>
+                        <button class="skill-modal-close" id="modal-close-x">&times;</button>
+                    </div>
+                    <div class="skill-modal-body">
+                        <p class="skill-modal-intro">How proficient are you in <strong>${skillName}</strong>?</p>
+                        <div class="skill-range-wrap">
+                            <div class="skill-range-val" id="skill-range-display">80%</div>
+                            <input type="range" id="skill-level-range" min="0" max="100" value="80" class="skill-slider">
+                            <div class="skill-range-labels">
+                                <span>Beginner</span>
+                                <span>Expert</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="skill-modal-footer">
+                        <button class="btn btn-secondary skill-modal-close" id="modal-cancel-btn">Cancel</button>
+                        <button class="btn btn-primary" id="confirm-skill-level">Add Skill</button>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            const range = modal.querySelector('#skill-level-range');
+            const display = modal.querySelector('#skill-range-display');
+            range.addEventListener('input', (e) => {
+                display.textContent = e.target.value + '%';
+            });
+
+            const close = () => {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+                // Optional: remove contents after transition
+                setTimeout(() => { if (!modal.classList.contains('active')) modal.innerHTML = ''; }, 300);
+            };
+
+            // Remove previous listeners if any (by replacing the element or using a flag, 
+            // but since we replace innerHTML, we just need to be careful with the overlay itself)
+            const newModal = modal.cloneNode(true);
+            modal.parentNode.replaceChild(newModal, modal);
+            modal = newModal;
+
+            modal.querySelectorAll('.skill-modal-close').forEach(c => c.addEventListener('click', close));
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) close();
+            });
+
+            modal.querySelector('#confirm-skill-level').addEventListener('click', () => {
+                const level = range.value;
+                close(); // Close first to improve feel
+                setTimeout(() => onSave(level), 50); // Small delay to let modal start closing
             });
         }
 
@@ -623,18 +734,18 @@
         if (roleEl) roleEl.textContent = isAdmin ? 'Administrator' : 'Intern';
 
         const items = [
-            { label: 'Dashboard', href: 'dashboard.html', icon: '⊞' },
-            { label: 'My Profile', href: 'student-profile.html', icon: '👤', active: true },
-            { label: 'Leaderboard', href: 'leaderboard.html', icon: '🏆' },
-            { label: 'My Analytics', href: `student-analytics.html?student=${session.userId}`, icon: '📊' },
-            { label: 'Projects', href: 'projects.html', icon: '🗂️' },
+            { label: 'Dashboard', href: 'dashboard.html', icon: 'grid_view' },
+            { label: 'My Profile', href: 'student-profile.html', icon: 'person', active: true },
+            { label: 'Leaderboard', href: 'leaderboard.html', icon: 'leaderboard' },
+            { label: 'My Analytics', href: `student-analytics.html?student=${session.userId}`, icon: 'analytics' },
+            { label: 'Projects', href: 'projects.html', icon: 'folder' },
         ];
 
         if (nav) {
             nav.innerHTML = '<div class="nav-section-label">Menu</div>' +
                 items.map(item => `
                 <a class="nav-item${item.href === activePage ? ' active' : ''}" href="${item.href}" aria-current="${item.href === activePage ? 'page' : 'false'}">
-                    <span class="nav-icon" aria-hidden="true">${item.icon}</span>
+                    <span class="nav-icon" aria-hidden="true"><span class="material-symbols-outlined">${item.icon}</span></span>
                     <span>${item.label}</span>
                 </a>`).join('');
         }

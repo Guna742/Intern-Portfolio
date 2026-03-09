@@ -41,7 +41,7 @@
         if (projects.length === 0) {
             grid.innerHTML = `
         <div class="empty-state" style="grid-column:1/-1">
-          <div class="empty-icon" aria-hidden="true">📂</div>
+          <div class="empty-icon" aria-hidden="true"><span class="material-symbols-outlined" style="font-size: 48px;">folder_off</span></div>
           <div class="empty-title">No projects yet</div>
           <div class="empty-desc">
             ${isUser
@@ -96,7 +96,7 @@
           ${p.screenshot
                 ? `<img class="card-img" src="${p.screenshot}" alt="${p.title} screenshot" loading="lazy">`
                 : `<div class="card-img-placeholder">
-                <span class="ph-icon" aria-hidden="true">🗂️</span>
+                <span class="ph-icon" aria-hidden="true"><span class="material-symbols-outlined" style="font-size: 48px;">folder</span></span>
                 <span class="ph-title">${p.techStack?.[0] || 'Project'}</span>
               </div>`}
           ${p.status ? `<span class="card-status-badge ${p.status.toLowerCase()}">${p.status}</span>` : ''}
@@ -119,7 +119,7 @@
                 : ''}
             ${p.liveLink
                 ? `<a class="card-link live" href="${p.liveLink}" target="_blank" rel="noopener" aria-label="${p.liveLinkType === 'Demo' ? 'Demo' : 'Live demo'} for ${p.title}">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  <span class="material-symbols-outlined" style="font-size: 14px;">open_in_new</span>
                   ${p.liveLinkType === 'Demo' ? 'Demo URL' : 'Live Demo'}
                 </a>`
                 : ''}
@@ -127,10 +127,10 @@
           ${isUser ? `
           <div class="card-actions">
             <button class="btn btn-icon btn-sm" data-edit="${p.id}" title="Edit project" aria-label="Edit ${p.title}">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span class="material-symbols-outlined" style="font-size: 18px;">edit</span>
             </button>
             <button class="btn btn-icon btn-sm" data-delete="${p.id}" data-title="${p.title}" title="Delete project" aria-label="Delete ${p.title}">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--clr-danger)" stroke-width="2" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              <span class="material-symbols-outlined" style="font-size: 18px; color:var(--clr-danger)">delete</span>
             </button>
           </div>` : isAdmin ? `
           <div class="card-rating-zone">
@@ -148,7 +148,8 @@
           ` : ''}
         </div>
         <!-- Student owner name -->
-        <div class="card-owner" aria-label="Project by ${ownerName || 'Unknown'}">\n          <span class="card-owner-icon" aria-hidden="true">👤</span>
+        <div class="card-owner" aria-label="Project by ${ownerName || 'Unknown'}">
+          <span class="card-owner-icon" aria-hidden="true"><span class="material-symbols-outlined" style="font-size: 14px;">person</span></span>
           <span class="card-owner-name">${ownerName || 'Unassigned'}</span>
         </div>
       </article>`;
@@ -261,7 +262,7 @@
       <span class="tag-chip">
         ${t}
         <button class="tag-chip-remove" data-idx="${i}" aria-label="Remove ${t}" type="button">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span class="material-symbols-outlined" style="font-size: 12px;">close</span>
         </button>
       </span>
     `).join('');
@@ -390,10 +391,10 @@
     // ── Toast ──
     function showToast(message, type = 'info') {
         const container = document.getElementById('toast-container');
-        const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+        const icons = { success: 'check_circle', error: 'error', info: 'info' };
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
-        toast.innerHTML = `<span class="toast-icon" aria-hidden="true">${icons[type] || 'ℹ️'}</span><span>${message}</span>`;
+        toast.innerHTML = `<span class="toast-icon material-symbols-outlined" aria-hidden="true">${icons[type] || 'info'}</span><span>${message}</span>`;
         container.appendChild(toast);
         setTimeout(() => {
             toast.style.opacity = '0';
@@ -425,23 +426,23 @@
         if (roleEl) roleEl.textContent = isAdmin ? (p?.role || 'Administrator') : 'Intern';
 
         const items = [
-            { label: 'Dashboard', href: 'dashboard.html', icon: '⊞' },
-            { label: 'My Profile', href: isAdmin ? 'admin-profile.html' : 'student-profile.html', icon: '👤' },
+            { label: 'Dashboard', href: 'dashboard.html', icon: 'grid_view' },
+            { label: 'My Profile', href: isAdmin ? 'admin-profile.html' : 'student-profile.html', icon: 'person' },
             ...(isAdmin
-                ? [{ label: 'Interns', href: 'students.html', icon: '👥' }]
+                ? [{ label: 'Interns', href: 'students.html', icon: 'group' }]
                 : [
-                    { label: 'Leaderboard', href: 'leaderboard.html', icon: '🏆' },
-                    { label: 'My Analytics', href: `student-analytics.html?student=${session.userId}`, icon: '📊' }
+                    { label: 'Leaderboard', href: 'leaderboard.html', icon: 'leaderboard' },
+                    { label: 'My Analytics', href: `student-analytics.html?student=${session.userId}`, icon: 'analytics' }
                 ]
             ),
-            { label: 'Projects', href: 'projects.html', icon: '🗂️', active: true },
+            { label: 'Projects', href: 'projects.html', icon: 'folder', active: true },
         ];
 
         if (nav) {
             nav.innerHTML = '<div class="nav-section-label">Menu</div>' +
                 items.map(item => `
           <a class="nav-item${item.href === activePage ? ' active' : ''}" href="${item.href}" aria-current="${item.href === activePage ? 'page' : 'false'}">
-            <span class="nav-icon" aria-hidden="true">${item.icon}</span>
+            <span class="nav-icon" aria-hidden="true"><span class="material-symbols-outlined">${item.icon}</span></span>
             <span>${item.label}</span>
           </a>`).join('');
         }

@@ -1,15 +1,14 @@
 /**
- * InternTrack — Login Page Logic
- * Handles role toggle, form validation, animations, and auth.
+ * I.R.I.S — Login Page Logic
+ * Handles role toggle, sign-in, sign-up, and Firebase auth.
  */
 
 'use strict';
 
 (() => {
-    // Redirect already-authenticated users
-    Auth.redirectByRole();
-
-    // ── DOM refs ──
+    /* ═══════════════════════════════════════════
+       SIGN IN
+    ═══════════════════════════════════════════ */
     const form = document.getElementById('login-form');
     const emailEl = document.getElementById('email');
     const passwordEl = document.getElementById('password');
@@ -17,11 +16,11 @@
     const errorBox = document.getElementById('error-box');
     const errorMsg = document.getElementById('error-msg');
     const togglePw = document.getElementById('toggle-pw');
-    const roleBtns = document.querySelectorAll('.role-btn');
+    const roleBtns = document.querySelectorAll('#view-signin .role-btn');
 
-    let selectedRole = 'admin'; // default
+    let selectedRole = 'admin';
 
-    // ── Role Toggle ──
+    // ── Role Toggle (sign-in) ──
     roleBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             roleBtns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
@@ -29,80 +28,53 @@
             btn.setAttribute('aria-pressed', 'true');
             selectedRole = btn.dataset.role;
             hideError();
-            // Update placeholder hints
-            if (selectedRole === 'admin') {
-                emailEl.placeholder = 'e.g. admin@interntrack.com';
-                passwordEl.placeholder = 'e.g. admin123';
-            } else {
-                emailEl.placeholder = 'e.g. intern01@interntrack.com';
-                passwordEl.placeholder = 'e.g. intern123';
-            }
         });
     });
 
-    // ── Password toggle ──
+    // ── Password visibility toggle (sign-in) ──
     togglePw.addEventListener('click', () => {
-        const isHidden = passwordEl.type === 'password';
-        passwordEl.type = isHidden ? 'text' : 'password';
-        togglePw.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
-        togglePw.querySelector('svg').innerHTML = isHidden
+        const hidden = passwordEl.type === 'password';
+        passwordEl.type = hidden ? 'text' : 'password';
+        togglePw.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
+        togglePw.querySelector('svg').innerHTML = hidden
             ? '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>'
             : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
     });
 
-    // ── Ripple effect ──
-    function addRipple(e) {
-        const btn = e.currentTarget;
-        const rect = btn.getBoundingClientRect();
-        const ripple = document.createElement('span');
-        ripple.classList.add('ripple-el');
-        ripple.style.left = (e.clientX - rect.left - 6) + 'px';
-        ripple.style.top = (e.clientY - rect.top - 6) + 'px';
-        btn.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 600);
-    }
-    loginBtn.addEventListener('click', addRipple);
-
-    // ── Error helpers ──
     function showError(msg) {
         errorMsg.textContent = msg;
         errorBox.classList.add('visible');
-        // Shake the card
         const card = document.querySelector('.auth-card');
         card.classList.remove('shake');
-        void card.offsetWidth; // force reflow
+        void card.offsetWidth;
         card.classList.add('shake');
         setTimeout(() => card.classList.remove('shake'), 600);
     }
+    function hideError() { errorBox.classList.remove('visible'); }
+    function setLoading(on) { loginBtn.disabled = on; loginBtn.classList.toggle('loading', on); }
 
-    function hideError() {
-        errorBox.classList.remove('visible');
-    }
+    // ── Ripple ──
+    loginBtn.addEventListener('click', e => {
+        const rect = loginBtn.getBoundingClientRect();
+        const r = document.createElement('span');
+        r.classList.add('ripple-el');
+        r.style.left = (e.clientX - rect.left - 6) + 'px';
+        r.style.top = (e.clientY - rect.top - 6) + 'px';
+        loginBtn.appendChild(r);
+        setTimeout(() => r.remove(), 600);
+    });
 
-    // ── Loading state ──
-    function setLoading(on) {
-        loginBtn.disabled = on;
-        loginBtn.classList.toggle('loading', on);
-    }
-
-    // ── Submit ──
-    form.addEventListener('submit', async (e) => {
+    // ── Sign In Submit ──
+    form.addEventListener('submit', async e => {
         e.preventDefault();
         hideError();
-
         const email = emailEl.value.trim();
         const password = passwordEl.value;
-
-        // Basic validation
-        if (!email) { showError('Email ID is required.'); emailEl.focus(); return; }
+        if (!email) { showError('Email is required.'); emailEl.focus(); return; }
         if (!password) { showError('Password is required.'); passwordEl.focus(); return; }
 
         setLoading(true);
-
-        // Simulate async network delay for realism
-        await new Promise(r => setTimeout(r, 900));
-
-        const result = Auth.login(email, password, selectedRole);
+        const result = await Auth.login(email, password, selectedRole);
 
         if (!result.success) {
             setLoading(false);
@@ -110,27 +82,16 @@
             return;
         }
 
-        // Success → fade out and redirect
-        loginBtn.textContent = '✓ Authenticated';
-        loginBtn.style.backgroundColor = 'var(--clr-success)';
+        loginBtn.querySelector('.btn-text').textContent = '✓ Authenticated';
+        loginBtn.style.backgroundColor = 'var(--clr-success, #10b981)';
         await new Promise(r => setTimeout(r, 600));
         document.body.style.opacity = '0';
         document.body.style.transition = 'opacity .4s ease';
-        setTimeout(() => window.location.replace('dashboard.html'), 400);
+        setTimeout(() => Auth.redirectByRole(), 400);
     });
 
-    // ── Create Account ──
-    const createAccountLink = document.getElementById('create-account-link');
-    if (createAccountLink) {
-        createAccountLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            alert('Registration is currently disabled in the demo. Please contact your administrator to create an account.');
-        });
-    }
+    [emailEl, passwordEl].forEach(el => el.addEventListener('input', hideError));
 
-    // ── Input: clear error on change ──
-    [emailEl, passwordEl].forEach(el => {
-        el.addEventListener('input', hideError);
-    });
 
 })();
+

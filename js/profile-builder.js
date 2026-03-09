@@ -144,7 +144,7 @@
       <span class="tag-chip">
         ${s}
         <button class="tag-chip-remove" data-idx="${i}" aria-label="Remove ${s} skill" type="button">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span class="material-symbols-outlined" style="font-size: 12px;">close</span>
         </button>
       </span>
     `).join('');
@@ -187,13 +187,15 @@
     // ── Change detection ──
     function markSaved() {
         saveStatus.classList.remove('saved');
-        saveStatusIcon.textContent = '✅';
+        saveStatusIcon.textContent = 'check_circle';
+        saveStatusIcon.classList.add('material-symbols-outlined');
         saveStatusText.textContent = 'All changes saved';
     }
 
     function markUnsaved() {
         saveStatus.classList.remove('saved');
-        saveStatusIcon.textContent = '💾';
+        saveStatusIcon.textContent = 'save';
+        saveStatusIcon.classList.add('material-symbols-outlined');
         saveStatusText.textContent = 'Unsaved changes';
     }
     document.querySelectorAll('.field-input').forEach(el => {
@@ -233,7 +235,8 @@
         saveBtn.classList.add('saved-anim');
         setTimeout(() => saveBtn.classList.remove('saved-anim'), 800);
         saveStatus.classList.add('saved');
-        saveStatusIcon.textContent = '✅';
+        saveStatusIcon.textContent = 'check_circle';
+        saveStatusIcon.classList.add('material-symbols-outlined');
         saveStatusText.textContent = 'Saved successfully';
 
         showToast(`Profile for ${p.name || currentStudentId} saved!`, 'success');
@@ -266,10 +269,10 @@
     // ── Toast ──
     function showToast(message, type = 'info') {
         const container = document.getElementById('toast-container');
-        const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+        const icons = { success: 'check_circle', error: 'error', info: 'info' };
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
-        toast.innerHTML = `<span class="toast-icon" aria-hidden="true">${icons[type]}</span><span>${message}</span>`;
+        toast.innerHTML = `<span class="toast-icon material-symbols-outlined" aria-hidden="true">${icons[type]}</span><span>${message}</span>`;
         container.appendChild(toast);
         setTimeout(() => {
             toast.style.opacity = '0';
@@ -301,17 +304,17 @@
 
 
         const items = [
-            { label: 'Dashboard', href: 'dashboard.html', icon: '⊞' },
-            { label: 'My Profile', href: 'admin-profile.html', icon: '👤' },
-            { label: 'Interns', href: 'students.html', icon: '👥' },
-            { label: 'Projects', href: 'projects.html', icon: '🗂️' },
+            { label: 'Dashboard', href: 'dashboard.html', icon: 'grid_view' },
+            { label: 'My Profile', href: 'admin-profile.html', icon: 'person' },
+            { label: 'Interns', href: 'students.html', icon: 'group' },
+            { label: 'Projects', href: 'projects.html', icon: 'folder' },
         ];
 
         if (nav) {
             nav.innerHTML = '<div class="nav-section-label">Menu</div>' +
                 items.map(item => `
           <a class="nav-item${item.href === activePage ? ' active' : ''}" href="${item.href}" aria-current="${item.href === activePage ? 'page' : 'false'}">
-            <span class="nav-icon" aria-hidden="true">${item.icon}</span>
+            <span class="nav-icon" aria-hidden="true"><span class="material-symbols-outlined">${item.icon}</span></span>
             <span>${item.label}</span>
           </a>`).join('');
         }

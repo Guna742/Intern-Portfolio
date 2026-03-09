@@ -42,7 +42,7 @@
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, .45);
 
   /* ── Typography ── */
-  --font-primary: 'Inter', system-ui, sans-serif;
+  --font-primary: 'Open Sans', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
   --fs-xs: .75rem;

@@ -29,13 +29,13 @@
     const outputEl = document.getElementById('analytics-output');
 
     if (!targetUid) {
-        showError('No intern specified. Return to Intern Roster and click "Analytics".');
+        showError('No intern specified. Return to Intern Directory and click "Analytics".');
         return;
     }
 
     const profile = Storage.getProfile(targetUid);
     if (!profile) {
-        showError('Intern profile not found. They may not have a profile built yet.');
+        showError('Intern profile could not be loaded. Please ensure you are logged in.');
         return;
     }
 
@@ -72,14 +72,13 @@
         setTimeout(() => {
             try { animateCounters(); } catch (e) { console.warn('Counter animation failed', e); }
             try {
-                if (myProjects && myProjects.length > 0) {
-                    renderLineChart(myProjects);
-                }
-            } catch (e) { console.warn('Line chart failed', e); }
+                refreshCharts();
+            } catch (e) { console.warn('Charts failed', e); }
             try { renderBarChart(profile.skills || []); } catch (e) { console.warn('Bar chart failed', e); }
 
             // Critical: Always reveal content
             initReveal();
+            setupDetailHandlers();
         }, 80);
     } catch (err) {
         console.error('Analytics render failed', err);
@@ -104,7 +103,7 @@
         return `
         <!-- ═══ INTERN PROFILE BANNER ═══ -->
         <div class="role-banner ${isAdmin ? 'admin' : 'user'} reveal anim-d1" style="margin-bottom:var(--sp-8)">
-            <span class="role-banner-icon" aria-hidden="true">${p.avatar ? `<img src="${p.avatar}" alt="${p.name}" style="width:40px;height:40px;border-radius:50%;object-fit:cover">` : '📊'}</span>
+            <span class="role-banner-icon" aria-hidden="true">${p.avatar ? `<img src="${p.avatar}" alt="${p.name}" style="width:40px;height:40px;border-radius:50%;object-fit:cover">` : '<span class="material-symbols-outlined">analytics</span>'}</span>
             <div class="role-banner-text">
                 <div class="role-banner-title">${p.name || 'Intern'}</div>
                 <div class="role-banner-sub">${internObj2.role || 'Intern'} ${internObj2.company ? '· ' + internObj2.company : ''} · ${periodStr}</div>
@@ -112,13 +111,31 @@
             <span class="badge ${isAdmin ? 'badge-admin' : 'badge-user'}">${isAdmin ? 'Admin View' : 'My Stats'}</span>
         </div>
 
+        <!-- ═══ HOURLY REPORT WIDGET (Intern Only) ═══ -->
+        ${!isAdmin ? `
+        <div class="report-widget reveal anim-d1" style="margin-bottom:var(--sp-8); background:var(--clr-bg-card); border-radius:16px; padding:20px; border:1px solid var(--clr-border); display:grid; grid-template-columns: 1fr auto; gap:20px; align-items:center;">
+            <div>
+                <div style="font-size:1.1rem; font-weight:600; color:var(--clr-text-main); margin-bottom:4px;">Daily Activity Report</div>
+                <div style="font-size:0.9rem; color:var(--clr-text-muted);">Please submit your progress update every 2 hours (09:00 - 17:00).</div>
+            </div>
+            <div id="report-action-area">
+                <button class="btn btn-primary" onclick="window.submitHourlyReport()">
+                    <span class="material-symbols-outlined" style="margin-right:8px;">send</span>
+                    Submit Current Phase Report
+                </button>
+            </div>
+        </div>
+        ` : ''}
+
         <!-- ═══ STATS ROW ═══ -->
         <div class="stats-row">
 
             <div class="stat-card reveal anim-d1">
                 <div class="stat-card-head">
                     <div class="stat-card-label">Overall Score</div>
-                    <div class="stat-card-icon" style="background:rgba(139,92,246,.12)" aria-hidden="true">⭐</div>
+                    <div class="stat-card-icon" style="background:rgba(139,92,246,.12)" aria-hidden="true">
+                        <span class="material-symbols-outlined" style="color:var(--clr-violet)">stars</span>
+                    </div>
                 </div>
                 <div class="stat-card-value counter-num" data-target="${overallScore}" data-suffix="%">0%</div>
                 <div class="stat-card-trend ${overallScore >= 70 ? 'up' : overallScore >= 50 ? 'neutral' : 'down'}">
@@ -132,7 +149,9 @@
             <div class="stat-card reveal anim-d2">
                 <div class="stat-card-head">
                     <div class="stat-card-label">Skills Listed</div>
-                    <div class="stat-card-icon" style="background:rgba(34,211,238,.12)" aria-hidden="true">⚡</div>
+                    <div class="stat-card-icon" style="background:rgba(34,211,238,.12)" aria-hidden="true">
+                        <span class="material-symbols-outlined" style="color:var(--clr-cyan)">bolt</span>
+                    </div>
                 </div>
                 <div class="stat-card-value counter-num" data-target="${skillCount}">0</div>
                 <div class="stat-card-trend ${skillCount > 0 ? 'up' : 'neutral'}">
@@ -145,7 +164,9 @@
             <div class="stat-card reveal anim-d3">
                 <div class="stat-card-head">
                     <div class="stat-card-label">Projects Submitted</div>
-                    <div class="stat-card-icon" style="background:rgba(16,185,129,.1)" aria-hidden="true">🗂️</div>
+                    <div class="stat-card-icon" style="background:rgba(16,185,129,.1)" aria-hidden="true">
+                        <span class="material-symbols-outlined" style="color:var(--clr-success)">folder</span>
+                    </div>
                 </div>
                 <div class="stat-card-value counter-num" data-target="${projectCount}">0</div>
                 <div class="stat-card-trend ${projectCount > 0 ? 'up' : 'neutral'}">
@@ -158,7 +179,9 @@
             <div class="stat-card reveal anim-d4">
                 <div class="stat-card-head">
                     <div class="stat-card-label">Profile Completion</div>
-                    <div class="stat-card-icon" style="background:rgba(245,158,11,.1)" aria-hidden="true">📋</div>
+                    <div class="stat-card-icon" style="background:rgba(245,158,11,.1)" aria-hidden="true">
+                        <span class="material-symbols-outlined" style="color:var(--clr-warning)">checklist</span>
+                    </div>
                 </div>
                 <div class="stat-card-value counter-num" data-target="${completionPct}" data-suffix="%">0%</div>
                 <div class="stat-card-trend ${completionPct >= 80 ? 'up' : completionPct >= 50 ? 'neutral' : 'down'}">
@@ -186,23 +209,24 @@
         <!-- ═══ CHARTS ROW ═══ -->
         <div class="charts-row">
 
-            <!-- Line Chart: Performance Growth -->
+            <!-- Chart 1: Analytic Overview -->
             <div class="chart-widget reveal anim-d1">
                 <div class="chart-widget-head">
                     <div>
-                        <div class="chart-widget-title">Analytic Overview</div>
-                        <div class="chart-widget-meta">Performance &amp; Score growth across key metrics</div>
+                        <div class="chart-widget-title" id="chart-1-title">Analytic Overview</div>
+                        <div class="chart-widget-meta" id="chart-1-meta">Long-term performance & project growth</div>
                     </div>
+                </div>
+                <div class="chart-sub-head" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                     <div class="chart-controls">
                         <button class="chart-tab active" onclick="switchTab(this,'growth')">Growth</button>
                         <button class="chart-tab" onclick="switchTab(this,'skills')">Skills</button>
                         <button class="chart-tab" onclick="switchTab(this,'projects')">Projects</button>
                     </div>
                 </div>
-                <div class="line-chart-wrap" id="line-chart-wrap" aria-label="Performance line chart">
+                <div class="line-chart-wrap" id="line-chart-wrap-1" aria-label="Performance line chart">
                     <!-- SVG injected by JS -->
                 </div>
-                <div class="chart-axes" id="chart-x-labels" aria-hidden="true"></div>
                 <div class="chart-legend">
                     <div class="legend-item">
                         <div class="legend-dot" style="background:#8b5cf6"></div>
@@ -215,20 +239,47 @@
                 </div>
             </div>
 
-            <!-- Bar Chart: Skill Distribution -->
+            <!-- Chart 2: Recent Progress -->
             <div class="chart-widget reveal anim-d2">
+                <div class="chart-widget-head">
+                    <div>
+                        <div class="chart-widget-title" id="chart-2-title">Recent Progress</div>
+                        <div class="chart-widget-meta" id="chart-2-meta">Time-based activity tracking</div>
+                    </div>
+                </div>
+                <div class="chart-sub-head" style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:15px;">
+                    <div class="filter-group">
+                        <button class="filter-btn" onclick="updateTimeFilter2('today', this)">Today</button>
+                        <button class="filter-btn" onclick="updateTimeFilter2('week', this)">Week</button>
+                        <button class="filter-btn active" onclick="updateTimeFilter2('month', this)">Month</button>
+                    </div>
+                </div>
+                <div class="line-chart-wrap" id="line-chart-wrap-2" aria-label="Comparison chart">
+                    <!-- SVG injected by JS -->
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#10b981"></div>
+                        <span>Activity</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ═══ SKILL DISTRIBUTION ROW ═══ -->
+        <div class="charts-row" style="grid-template-columns: 1fr;">
+            <div class="chart-widget reveal anim-d2" style="min-height: auto;">
                 <div class="chart-widget-head">
                     <div>
                         <div class="chart-widget-title">Skill Distribution</div>
                         <div class="chart-widget-meta">Top technical competencies</div>
                     </div>
-                    <button class="more-dots-btn" aria-label="More options">⋯</button>
                 </div>
                 <div class="bar-chart-wrap" id="bar-chart-wrap" aria-label="Skill bar chart">
                     <!-- Bars injected by JS -->
                 </div>
             </div>
-
         </div>
 
         <!-- ═══ HISTORICAL TRACK TABLE ═══ -->
@@ -236,13 +287,13 @@
             <div class="history-head">
                 <div class="history-title">Performance Log</div>
                 <div class="history-actions">
-                    ${isAdmin ? `<a href="students.html" class="btn btn-secondary btn-sm">← Back to Interns</a>` : `
-                    <a href="projects.html" class="btn btn-primary btn-sm">✏️ Edit Project</a>`}
+                    ${isAdmin ? `<a href="students.html" class="btn btn-secondary btn-sm"><span class="material-symbols-outlined" style="font-size: 16px;">arrow_back</span> Back to Interns</a>` : `
+                    <a href="projects.html" class="btn btn-primary btn-sm"><span class="material-symbols-outlined" style="font-size: 16px;">edit</span> Edit Project</a>`}
                 </div>
             </div>
             ${projects.length === 0 ? `
             <div class="empty-state">
-                <div class="empty-state-icon">🗂️</div>
+                <div class="empty-state-icon material-symbols-outlined">folder</div>
                 <div class="empty-state-title">No projects yet</div>
                 <div class="empty-state-desc">This intern hasn't submitted any projects yet.</div>
             </div>` : `
@@ -250,7 +301,7 @@
                 <thead>
                     <tr>
                         <th><input type="checkbox" class="row-checkbox" aria-label="Select all"></th>
-                        <th>Project Details</th>
+                        <th>Project</th>
                         <th>Performance</th>
                         <th>Submitted</th>
                         <th>Status</th>
@@ -265,35 +316,34 @@
             const initials = (proj.ownerName || profile.name || 'I')[0].toUpperCase();
             return `
                     <tr>
-                        <td><input type="checkbox" class="row-checkbox" aria-label="Select ${proj.title}"></td>
-                        <td data-label="Project Details">
-                            <div class="proj-col-main">
-                                <span class="proj-name">${proj.title}</span>
-                                <span class="proj-sub">${proj.description ? proj.description.slice(0, 55) + (proj.description.length > 55 ? '…' : '') : 'No description'}</span>
-                                ${stackArr.length ? `<div class="proj-stack-chips">${stackArr.map(t => `<span class="chip">${t}</span>`).join('')}</div>` : ''}
-                            </div>
-                        </td>
-                        <td data-label="Performance">
-                            ${proj.rating ? `
-                                <div class="rating-display">
-                                    <div class="stars" style="color:var(--clr-amber)">${'★'.repeat(proj.rating)}${'☆'.repeat(5 - proj.rating)}</div>
-                                    <div class="rating-label">${proj.rating}/5 Score</div>
-                                </div>
-                            ` : `<span class="text-muted">No rating</span>`}
-                        </td>
-                        <td data-label="Submitted" class="date-col">${proj.createdAt ? fmtDateShort(proj.createdAt) : 'N/A'}</td>
-                        <td data-label="Status"><span class="status-pill pill-${status}">${capitalize(status)}</span></td>
-                        <td data-label="Role">
-                            <div class="owner-cell">
-                                <div class="owner-avatar-sm">${initials}</div>
-                                <div class="owner-info">
-                                    <span class="owner-name">Intern</span>
-                                    <span class="owner-email">${profile.email || '—'}</span>
+                        <td><input type="checkbox" class="row-checkbox"></td>
+                        <td>
+                            <div class="proj-info">
+                                <div class="proj-name">${proj.title}</div>
+                                <div class="proj-stack">
+                                    ${stackArr.map(s => `<span>${s}</span>`).join('')}
                                 </div>
                             </div>
                         </td>
-                        <td data-label="Actions">
-                            ${proj.liveLink ? `<a href="${proj.liveLink}" target="_blank" rel="noopener" class="more-btn">Live ↗</a>` : `<button class="more-btn">Details</button>`}
+                        <td>
+                            <div class="progress-mini">
+                                <div class="progress-mini-bar" style="width:${proj.rating ? (proj.rating / 5) * 100 : 0}%; background:${proj.rating ? 'var(--clr-violet)' : '#eee'}"></div>
+                            </div>
+                        </td>
+                        <td><div class="history-date">${proj.createdAt ? fmtDateShort(proj.createdAt) : 'N/A'}</div></td>
+                        <td><span class="badge badge-${status}">${capitalize(status)}</span></td>
+                        <td>
+                             <div class="table-user">
+                                <div class="table-user-avatar" style="background:var(--clr-violet-alpha)">${initials}</div>
+                                <span>Intern</span>
+                             </div>
+                        </td>
+                        <td>${proj.liveLink ? `<a href="${proj.liveLink}" target="_blank" rel="noopener" class="more-btn">Live ↗</a>` : `<button class="more-btn detail-trigger" data-id="${proj.id}">Details ▾</button>`}</td>
+                    </tr>
+                    <tr class="expandable-details-row" id="details-${proj.id}" style="display:none">
+                        <td colspan="7">
+                                </div>
+                            </div>
                         </td>
                     </tr>`;
         }).join('')}
@@ -315,13 +365,12 @@
         const cW = W - pad.left - pad.right;
         const cH = H - pad.top - pad.bottom;
 
-        // Generate 8 month data points from internship start or last 8 months
-        const points = generateTrendData(overallScore, 8);
+        const points = getTrendData('growth', projects, profile.skills || []);
         const targetPoints = points.map((_, i) => 65 + i * 1.5);
         const labels = getLast8Months();
 
         const xScale = (i) => pad.left + (i / (points.length - 1)) * cW;
-        const yScale = (v) => pad.top + cH - ((v - 40) / 60) * cH;
+        const yScale = (v) => pad.top + cH - (v / 100) * cH;
 
         const toPath = (arr) => arr.map((v, i) => `${i === 0 ? 'M' : 'L'} ${xScale(i).toFixed(1)} ${yScale(v).toFixed(1)}`).join(' ');
         const toArea = (arr) => `${toPath(arr)} L ${xScale(arr.length - 1).toFixed(1)} ${(pad.top + cH).toFixed(1)} L ${xScale(0).toFixed(1)} ${(pad.top + cH).toFixed(1)} Z`;
@@ -331,11 +380,11 @@
         if (xLabels) xLabels.innerHTML = labels.map(l => `<span>${l}</span>`).join('');
 
         // Y grid lines
-        const gridLines = [50, 60, 70, 80, 90, 100].map(v => {
+        const gridLines = [0, 20, 40, 60, 80, 100].map(v => {
             const y = yScale(v).toFixed(1);
             return `
             <line x1="${pad.left}" y1="${y}" x2="${W - pad.right}" y2="${y}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-            <text x="${pad.left - 6}" y="${y}" fill="#5a5a6a" font-size="9" text-anchor="end" dominant-baseline="middle">${v}</text>`;
+            <text x="${pad.left - 8}" y="${y}" fill="#5a5a6a" font-size="9" text-anchor="end" dominant-baseline="middle">${v}</text>`;
         }).join('');
 
         // Final SVG
@@ -428,13 +477,23 @@
         const colors = ['#7c5cfc', '#22d3ee', '#10b981', '#f59e0b', '#ec4899', '#6366f1', '#14b8a6'];
 
         const categories = skills.length > 0
-            ? skills.map((s, i) => ({ label: s, pct: Math.min(95, 45 + (i === 0 ? 50 : Math.floor(75 - i * 8 + Math.random() * 10))), color: colors[i % colors.length] }))
-            : [
-                { label: 'Communication', pct: 85, color: colors[0] },
-                { label: 'Problem Solving', pct: 72, color: colors[1] },
-                { label: 'Teamwork', pct: 68, color: colors[2] },
-                { label: 'Adaptability', pct: 55, color: colors[3] },
-            ];
+            ? skills.map((s, i) => {
+                const name = typeof s === 'object' ? s.name : s;
+                const manualPct = typeof s === 'object' ? s.level : null;
+                return {
+                    label: name,
+                    pct: manualPct !== null ? manualPct : 0,
+                    color: colors[i % colors.length]
+                };
+            })
+            : [];
+
+        if (categories.length === 0) {
+            wrap.innerHTML = `<div class="empty-state-mini" style="text-align:center;padding:var(--sp-8);opacity:0.6;font-size:var(--fs-xs)">
+                No skills recorded yet. Add them in your profile.
+            </div>`;
+            return;
+        }
 
         wrap.innerHTML = categories.slice(0, 7).map(c => `
             <div class="bar-row">
@@ -456,59 +515,168 @@
     }
 
 
+    // Global state for filters
+    let currentFilter2 = 'month'; // 'today', 'week', 'month'
+    let currentTab1 = 'growth';  // 'growth', 'skills'
+    let currentTab2 = 'projects'; // 'projects', 'activity'
+
     // ── Chart tab switching ──
     window.switchTab = function (el, mode) {
-        document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+        const parent = el.closest('.chart-widget');
+        parent.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
         el.classList.add('active');
+        currentTab1 = mode;
 
-        // Re-render with different data
-        const allP = Storage.getProjects();
-        const myP = allP.filter(p => p.ownerId === targetUid);
-        if (mode === 'growth') renderLineChart(myP);
-        else if (mode === 'skills') {
-            const skillData = (profile.skills || []).map((_, i) => 45 + Math.round(50 - i * 5 + Math.random() * 10));
-            renderLineChartRaw(skillData, '#22d3ee', '#10b981');
+        const title = document.getElementById('chart-1-title');
+        const meta = document.getElementById('chart-1-meta');
+        if (mode === 'growth') {
+            title.textContent = 'Analytic Overview';
+            meta.textContent = 'Long-term performance & project growth';
+        } else if (mode === 'skills') {
+            title.textContent = 'Technical Proficiency';
+            meta.textContent = 'Skill development and expertise levels';
         } else {
-            const projData = Array.from({ length: 8 }, (_, i) => i < myP.length ? (i + 1) * 10 : 0);
-            renderLineChartRaw(projData, '#f59e0b', '#ec4899');
+            title.textContent = 'Project Volume';
+            meta.textContent = 'Total submissions and quality benchmarks';
         }
+
+        refreshChart1();
     };
 
-    function renderLineChartRaw(points, color1, color2) {
-        const wrap = document.getElementById('line-chart-wrap');
+    window.updateTimeFilter2 = function (filter, el) {
+        // Update all Chart 2 filter buttons
+        const group = el.closest('.filter-group');
+        group.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.toggle('active', btn === el);
+        });
+        currentFilter2 = filter;
+        refreshChart2();
+    };
+
+    function refreshChart1() {
+        const myP = Storage.getProjects().filter(p => String(p.ownerId) === String(targetUid));
+        renderLineChart('line-chart-wrap-1', currentTab1, myP, true); // True = long-term
+    }
+
+    function refreshChart2() {
+        const myP = Storage.getProjects().filter(p => String(p.ownerId) === String(targetUid));
+        renderLineChart('line-chart-wrap-2', 'progress', myP, false); // False = granular
+    }
+
+    window.submitHourlyReport = function () {
+        const now = new Date();
+        const hr = now.getHours();
+
+        // Define windows and their strict closure points
+        const windows = [9, 11, 13, 15, 17, 18];
+        let targetHr = -1;
+
+        for (let i = 0; i < windows.length; i++) {
+            const w = windows[i];
+            const nextW = (i === windows.length - 1) ? 19 : windows[i + 1];
+            if (hr >= w && hr < nextW) {
+                targetHr = w;
+                break;
+            }
+        }
+
+        if (targetHr === -1) {
+            alert(`Reporting is currently unavailable. Windows are every 2 hours (09:00 - 18:00). Final submission expires at 19:00 (7 PM).`);
+            return;
+        }
+
+        const reports = Storage.getHourlyReports(session.userId);
+        const todayStr = now.toDateString();
+        const dup = reports.find(r => new Date(r.createdAt).toDateString() === todayStr && r.window === targetHr);
+
+        if (dup) {
+            alert(`You have already submitted your report for the ${targetHr === 18 ? '6:00 PM' : targetHr + ':00'} slot.`);
+            return;
+        }
+
+        const slotLabel = targetHr === 18 ? "6:00 PM (Final)" : `${targetHr}:00`;
+        const note = prompt(`Enter your progress update for the ${slotLabel} window:`);
+        if (!note) return;
+
+        Storage.saveHourlyReport({
+            userId: session.userId,
+            window: targetHr,
+            note: note,
+            timestamp: now.getTime()
+        });
+
+        alert('Report submitted successfully! Your progress graph will update.');
+        refreshChart2();
+    };
+
+    function refreshCharts() {
+        refreshChart1();
+        refreshChart2();
+    }
+
+    // ────────────────────────────────────────────────────────
+    // CHART: SVG LINE CHART
+    // ────────────────────────────────────────────────────────
+    function renderLineChart(containerId, mode, projects, isLongTerm = false) {
+        const wrap = document.getElementById(containerId);
         if (!wrap) return;
-        const W = wrap.clientWidth || 600;
+
+        const W = wrap.clientWidth || 400;
         const H = 200;
-        const pad = { top: 16, right: 20, bottom: 8, left: 36 };
+        const pad = { top: 16, right: 20, bottom: 20, left: 36 };
         const cW = W - pad.left - pad.right;
         const cH = H - pad.top - pad.bottom;
-        const max = Math.max(...points, 10);
-        const min = 0;
 
-        const xScale = (i) => pad.left + (i / (points.length - 1)) * cW;
-        const yScale = (v) => pad.top + cH - ((v - min) / (max - min)) * cH;
-        const toPath = (arr) => arr.map((v, i) => `${i === 0 ? 'M' : 'L'} ${xScale(i).toFixed(1)} ${yScale(v).toFixed(1)}`).join(' ');
+        const data = isLongTerm ? getLongTermTrendData(mode, projects) : getFilteredTrendData(mode, projects);
+        const points = data.values;
+        const labels = data.labels; // Detailed labels for tooltip
+
+        // Distinct colors for each metric
+        const colorMap = {
+            'growth': '#8b5cf6',   // Purple
+            'skills': '#22d3ee',   // Cyan
+            'projects': '#f59e0b', // Amber
+            'progress': '#10b981'  // Emerald
+        };
+        const color = colorMap[mode] || '#8b5cf6';
+        const color2 = mode === 'growth' || mode === 'skills' ? '#22d3ee' : mode === 'projects' ? '#10b981' : '#f59e0b';
+
+        const xScale = (i) => pad.left + (points.length > 1 ? (i / (points.length - 1)) * cW : cW / 2);
+        const yScale = (v) => pad.top + cH - (v / 100) * cH;
+
+        const toPath = (arr) => arr.length > 1
+            ? arr.map((v, i) => `${i === 0 ? 'M' : 'L'} ${xScale(i).toFixed(1)} ${yScale(v).toFixed(1)}`).join(' ')
+            : `M ${xScale(0).toFixed(1)} ${yScale(arr[0]).toFixed(1)} L ${W - pad.right} ${yScale(arr[0]).toFixed(1)}`;
+
         const toArea = (arr) => `${toPath(arr)} L ${xScale(arr.length - 1).toFixed(1)} ${(pad.top + cH).toFixed(1)} L ${xScale(0).toFixed(1)} ${(pad.top + cH).toFixed(1)} Z`;
 
-        wrap.innerHTML = `<svg id="line-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:${H}px;cursor:crosshair">
+        // Y grid lines
+        const gridLines = [0, 50, 100].map(v => {
+            const y = yScale(v).toFixed(1);
+            return `<line x1="${pad.left}" y1="${y}" x2="${W - pad.right}" y2="${y}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                    <text x="${pad.left - 8}" y="${y}" fill="#5a5a6a" font-size="9" text-anchor="end" dominant-baseline="middle">${v}</text>`;
+        }).join('');
+
+        wrap.innerHTML = `
+        <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:${H}px;cursor:crosshair" class="analytics-svg">
             <defs>
-                <linearGradient id="areaGrad3" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="${color1}" stop-opacity="0.3"/>
-                    <stop offset="100%" stop-color="${color1}" stop-opacity="0"/>
+                <linearGradient id="grad-${containerId}" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="${color}" stop-opacity="0.2"/>
+                    <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
                 </linearGradient>
             </defs>
-            <line id="guide-line" x1="0" y1="${pad.top}" x2="0" y2="${pad.top + cH}" stroke="${color1}" stroke-width="1" stroke-dasharray="4 2" style="display:none" />
-            <path d="${toArea(points)}" fill="url(#areaGrad3)"/>
-            <path d="${toPath(points)}" fill="none" stroke="${color1}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 8px ${color1}80)"/>
-            ${points.map((v, i) => `<circle class="chart-dot" data-idx="${i}" data-val="${v}" cx="${xScale(i).toFixed(1)}" cy="${yScale(v).toFixed(1)}" r="4" fill="${color1}" stroke="#fff" stroke-width="1.5"/>`).join('')}
+            ${gridLines}
+            <path d="${toArea(points)}" fill="url(#grad-${containerId})" />
+            <path d="${toPath(points)}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 8px ${color}60)"/>
+            ${points.map((v, i) => `<circle class="chart-dot" data-idx="${i}" cx="${xScale(i).toFixed(1)}" cy="${yScale(v).toFixed(1)}" r="4" fill="${color}" stroke="#fff" stroke-width="1.5"/>`).join('')}
+            <line id="guide-${containerId}" x1="0" y1="${pad.top}" x2="0" y2="${pad.top + cH}" stroke="${color}" stroke-width="1" stroke-dasharray="4 2" style="display:none" />
         </svg>
-        <div id="chart-tooltip" class="chart-tooltip" style="display:none;position:absolute;pointer-events:none;z-index:100;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.1);background:rgba(10,12,20,0.8);box-shadow:0 10px 30px rgba(0,0,0,0.5)"></div>`
-            ;
+        <div id="tooltip-${containerId}" class="chart-tooltip" style="display:none;position:absolute;pointer-events:none;z-index:100;backdrop-filter:blur(10px);min-width:120px;"></div>`;
 
-        const svg = document.getElementById('line-svg');
-        const guide = document.getElementById('guide-line');
-        const tooltip = document.getElementById('chart-tooltip');
-        const labels = getLast8Months();
+        // Interaction
+        const svg = wrap.querySelector('svg');
+        const guide = wrap.querySelector(`#guide-${containerId}`);
+        const tooltip = wrap.querySelector(`#tooltip-${containerId}`);
 
         svg.addEventListener('mousemove', (e) => {
             const rect = svg.getBoundingClientRect();
@@ -519,10 +687,7 @@
             let minDist = Infinity;
             points.forEach((_, i) => {
                 const dx = Math.abs(xScale(i) - xRel);
-                if (dx < minDist) {
-                    minDist = dx;
-                    closestIdx = i;
-                }
+                if (dx < minDist) { minDist = dx; closestIdx = i; }
             });
 
             const px = xScale(closestIdx);
@@ -533,27 +698,26 @@
             guide.style.display = 'block';
 
             tooltip.style.display = 'block';
-            tooltip.style.left = (px + 10) + 'px';
-            tooltip.style.top = (py - 40) + 'px';
+
+            // Fix misalignment on right edge
+            const isRightSide = px > W - 140;
+            tooltip.style.left = isRightSide ? (px - 130) + 'px' : (px + 10) + 'px';
+            tooltip.style.top = (py - 50) + 'px';
             tooltip.innerHTML = `
                 <div style="font-weight:700;color:#fff">${labels[closestIdx]}</div>
-                <div style="color:${color1}">Value: ${points[closestIdx]}</div>
+                <div style="color:${color}">${mode.toUpperCase()}: ${points[closestIdx]}%</div>
             `;
-
-            document.querySelectorAll('.chart-dot').forEach((dot, idx) => {
-                dot.setAttribute('r', idx === closestIdx ? '6' : '3');
-                dot.style.opacity = idx === closestIdx ? '1' : '0.6';
-            });
         });
 
         svg.addEventListener('mouseleave', () => {
             guide.style.display = 'none';
             tooltip.style.display = 'none';
-            document.querySelectorAll('.chart-dot').forEach(dot => {
-                dot.setAttribute('r', '3');
-                dot.style.opacity = '1';
-            });
         });
+    }
+
+    function renderLineChartRaw(points, color1, color2) {
+        // Replaced by refined renderLineChart
+        refreshCharts();
     }
 
     // ────────────────────────────────────────────────────────
@@ -591,47 +755,136 @@
     }
 
     function computeScore(p, projects) {
-        let s = 40; // Base score
-        if (p.skills?.length) s += Math.min(p.skills.length * 2, 10);
+        if (!projects || projects.length === 0) return 0;
+        const ratedProjects = projects.filter(proj => proj.rating);
+        if (ratedProjects.length === 0) return 0;
 
-        // Primary weight: Project Ratings
-        if (projects?.length) {
-            const ratedProjects = projects.filter(proj => proj.rating);
-            if (ratedProjects.length > 0) {
-                const totalRating = ratedProjects.reduce((sum, pr) => sum + pr.rating, 0);
-                const avgRating = totalRating / ratedProjects.length; // 0-5
-                s += (avgRating / 5) * 40; // Max 40 points for perfect ratings
-            }
-            s += Math.min(projects.length * 2, 10); // Volume bonus
-        }
-
-        if (p.avatar) s += 2;
-        if (p.socialLinks?.github) s += 2;
-
-        return Math.min(s, 99);
+        const totalRating = ratedProjects.reduce((sum, pr) => sum + pr.rating, 0);
+        const avgRating = totalRating / ratedProjects.length; // 0-5
+        return Math.round((avgRating / 5) * 100);
     }
 
-    function generateTrendData(finalScore, count) {
-        const points = [];
-        const start = Math.max(40, finalScore - 30);
-        for (let i = 0; i < count; i++) {
-            const prog = i / (count - 1);
-            const noise = (Math.random() - 0.5) * 8;
-            points.push(Math.min(99, Math.max(30, Math.round(start + (finalScore - start) * prog + noise))));
+    function getFilteredTrendData(type, myProjects) {
+        const mySkills = profile.skills || [];
+        const values = [];
+        const labels = [];
+        const now = new Date();
+
+        let steps = 6;
+
+        if (currentFilter2 === 'today') {
+            const hours = [9, 11, 13, 15, 17, 18];
+            steps = hours.length;
+            for (let h of hours) {
+                const t = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, 0, 0);
+                labels.push((h === 18 ? '6 PM' : (h < 10 ? '0' + h : h) + ':00'));
+                values.push(generateMockTrend(type, t.getTime(), myProjects, mySkills));
+            }
+        } else if (currentFilter2 === 'week') {
+            // Include last 7 days but skip Sundays
+            for (let i = 7; i >= 0; i--) {
+                const t = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+                if (t.getDay() === 0) continue; // Skip Sunday
+
+                labels.push(t.toLocaleDateString('en-US', { weekday: 'short' }));
+                values.push(generateMockTrend(type, t.getTime(), myProjects, mySkills));
+
+                if (labels.length === 6) break; // We want 6 working days
+            }
+        } else { // month -> 4 weeks instead of 30 days
+            steps = 4;
+            for (let i = steps - 1; i >= 0; i--) {
+                const t = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);
+                labels.push('Week ' + (steps - i));
+                values.push(calculateActualTrend(type, t.getTime(), myProjects, mySkills));
+            }
         }
-        points[points.length - 1] = finalScore;
-        return points;
+        return { values, labels };
+    }
+
+    function getLongTermTrendData(type, myProjects) {
+        const mySkills = profile.skills || [];
+        const values = [];
+        const labels = [];
+        const now = new Date();
+
+        for (let i = 7; i >= 0; i--) {
+            const d = new Date(now.getTime() - i * 30 * 24 * 60 * 60 * 1000);
+            labels.push('Phase ' + (8 - i));
+            values.push(calculateActualTrend(type, d.getTime(), myProjects, mySkills));
+        }
+        return { values, labels };
+    }
+
+    function calculateActualTrend(type, timestamp, projects, skills) {
+        if (type === 'projects') {
+            // Only count projects created before this point in time
+            const relevant = projects.filter(p => (p.createdAt || 0) <= timestamp);
+            if (relevant.length === 0) return 0;
+            const valid = relevant.filter(p => p.rating && p.rating > 0);
+            if (valid.length === 0) return 20; // Default baseline if projects exist but no rating
+            const avg = valid.reduce((s, p) => s + p.rating, 0) / valid.length;
+            return Math.round((avg / 5) * 100);
+        }
+
+        if (type === 'skills') {
+            if (!skills || skills.length === 0) return 0;
+            const avg = skills.reduce((sum, sk) => sum + (sk.level || 0), 0) / skills.length;
+
+            // Skill levels are usually static (current state). 
+            // We simulate a growth curve leading to the current average 
+            // for the trend chart, otherwise it's just a flat line.
+            const now = Date.now();
+            const startOfProgram = now - (90 * 24 * 60 * 60 * 1000); // Assume 90 days ago
+            const progress = (timestamp - startOfProgram) / (now - startOfProgram);
+            const clamped = Math.max(0.2, Math.min(1.0, progress));
+            return Math.round(avg * clamped);
+        }
+
+        if (type === 'growth') {
+            const pScore = calculateActualTrend('projects', timestamp, projects, skills);
+            const sScore = calculateActualTrend('skills', timestamp, projects, skills);
+            return Math.round((pScore + sScore) / 2);
+        }
+
+        if (type === 'progress') {
+            const reports = Storage.getHourlyReports(targetUid);
+            const targetDate = new Date(timestamp);
+            const todayStr = targetDate.toDateString();
+
+            if (currentFilter2 === 'today') {
+                // TODAY: Cumulative building to 100% (approx 16.6% per report for 6 windows)
+                const windows = [9, 11, 13, 15, 17, 18];
+                const hour = targetDate.getHours();
+                const pastWindows = windows.filter(w => w <= hour);
+                const count = reports.filter(r => {
+                    const d = new Date(r.createdAt);
+                    return d.toDateString() === todayStr && pastWindows.includes(r.window);
+                }).length;
+                return Math.min(100, Math.round(count * (100 / windows.length)));
+            }
+            if (currentFilter2 === 'week') {
+                // WEEK: Daily Score (reports in that specific 24h block / 6)
+                const count = reports.filter(r => new Date(r.createdAt).toDateString() === todayStr).length;
+                return Math.round((Math.min(count, 6) / 6) * 100);
+            }
+            // MONTH: Weekly Score rollup (reports in that 7-day period / 36)
+            // This analyzes "each and every report" for the week's days (6 working days * 6 reports = 36)
+            const weekEnd = timestamp;
+            const weekStart = timestamp - (7 * 24 * 60 * 60 * 1000);
+            const count = reports.filter(r => r.createdAt > weekStart && r.createdAt <= weekEnd).length;
+            return Math.round((Math.min(count, 36) / 36) * 100);
+        }
+
+        return 50;
+    }
+
+    function generateMockTrend(type, timestamp, projects, skills) {
+        return calculateActualTrend(type, timestamp, projects, skills);
     }
 
     function getLast8Months() {
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const now = new Date();
-        const result = [];
-        for (let i = 7; i >= 0; i--) {
-            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            result.push(months[d.getMonth()]);
-        }
-        return result;
+        return []; // Disabled in favor of dynamic labels
     }
 
     function fmtDate(d) {
@@ -674,7 +927,7 @@
                 <div class="empty-state-icon">⚠️</div>
                 <div class="empty-state-title">Cannot Load Analytics</div>
                 <div class="empty-state-desc">${msg}</div>
-                ${isAdmin ? `<a href="students.html" class="btn btn-secondary btn-sm" style="margin-top:20px">← Go to Intern Roster</a>` : ''}
+                ${isAdmin ? `<a href="students.html" class="btn btn-secondary btn-sm" style="margin-top:20px">← Go to Intern Directory</a>` : ''}
             </div>`;
         }
     }
@@ -711,23 +964,23 @@
 
         const nav = document.getElementById('sidebar-nav');
         const items = [
-            { label: 'Dashboard', href: 'dashboard.html', icon: '⊞' },
-            { label: 'My Profile', href: isAdmin ? 'admin-profile.html' : 'student-profile.html', icon: '👤' },
+            { label: 'Dashboard', href: 'dashboard.html', icon: 'grid_view' },
+            { label: 'My Profile', href: isAdmin ? 'admin-profile.html' : 'student-profile.html', icon: 'person' },
             ...(isAdmin
-                ? [{ label: 'Interns', href: 'students.html', icon: '👥', active: true }]
+                ? [{ label: 'Interns', href: 'students.html', icon: 'group', active: true }]
                 : [
-                    { label: 'Leaderboard', href: 'leaderboard.html', icon: '🏆' },
-                    { label: 'My Analytics', href: `student-analytics.html?student=${session.userId}`, icon: '📊', active: true }
+                    { label: 'Leaderboard', href: 'leaderboard.html', icon: 'leaderboard' },
+                    { label: 'My Analytics', href: `student-analytics.html?student=${session.userId}`, icon: 'analytics', active: true }
                 ]
             ),
-            { label: 'Projects', href: 'projects.html', icon: '🗂️' },
+            { label: 'Projects', href: 'projects.html', icon: 'folder' },
         ];
 
         if (nav) {
             nav.innerHTML = '<div class="nav-section-label">Menu</div>' +
                 items.map(item => `
                 <a class="nav-item${item.active ? ' active' : ''}" href="${item.href}" aria-current="${item.active ? 'page' : 'false'}">
-                    <span class="nav-icon" aria-hidden="true">${item.icon}</span>
+                    <span class="nav-icon" aria-hidden="true"><span class="material-symbols-outlined">${item.icon}</span></span>
                     <span>${item.label}</span>
                 </a>`).join('');
         }
@@ -747,6 +1000,37 @@
                 hamburger.setAttribute('aria-expanded', 'false');
             });
         }
+    }
+
+    function setupDetailHandlers() {
+        const triggers = document.querySelectorAll('.detail-trigger');
+        triggers.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.dataset.id;
+                const row = document.getElementById(`details-${id}`);
+                const isHidden = row.style.display === 'none';
+
+                // Close other open rows for accordion effect
+                document.querySelectorAll('.expandable-details-row').forEach(r => {
+                    if (r !== row) {
+                        r.style.display = 'none';
+                        const otherBtn = document.querySelector(`.detail-trigger[data-id="${r.id.replace('details-', '')}"]`);
+                        if (otherBtn) otherBtn.textContent = 'Details ▾';
+                        r.classList.remove('active');
+                    }
+                });
+
+                if (isHidden) {
+                    row.style.display = 'table-row';
+                    setTimeout(() => row.classList.add('active'), 10);
+                    btn.textContent = 'Hide Details ▴';
+                } else {
+                    row.classList.remove('active');
+                    setTimeout(() => row.style.display = 'none', 300);
+                    btn.textContent = 'Details ▾';
+                }
+            });
+        });
     }
 
 })();

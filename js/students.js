@@ -45,7 +45,7 @@
   userNameSb.textContent = currentName;
   userRoleSb.textContent = adminProfile?.role || 'Administrator';
 
-  welcome.textContent = `Intern Roster`;
+  welcome.textContent = `Intern Directory`;
   welcomeSub.textContent = 'Review intern profiles, performance metrics, and project contributions.';
   roleBanner.classList.add('admin');
 
@@ -106,17 +106,17 @@
 
   // ── Sidebar nav ──
   const NAV = [
-    { label: 'Dashboard', href: 'dashboard.html', icon: '⊞' },
-    { label: 'My Profile', href: 'admin-profile.html', icon: '👤' },
-    { label: 'Interns', href: 'students.html', icon: '👥', active: true },
-    { label: 'Projects', href: 'projects.html', icon: '🗂️' },
+    { label: 'Dashboard', href: 'dashboard.html', icon: 'grid_view' },
+    { label: 'My Profile', href: 'admin-profile.html', icon: 'person' },
+    { label: 'Interns', href: 'students.html', icon: 'group', active: true },
+    { label: 'Projects', href: 'projects.html', icon: 'folder' },
   ];
 
   let navHTML = `<div class="nav-section-label">Menu</div>`;
   NAV.forEach(item => {
     navHTML += `
       <a class="nav-item${item.active ? ' active' : ''}" href="${item.href}" aria-current="${item.active ? 'page' : 'false'}">
-        <span class="nav-icon" aria-hidden="true">${item.icon}</span>
+        <span class="nav-icon" aria-hidden="true"><span class="material-symbols-outlined">${item.icon}</span></span>
         <span>${item.label}</span>
       </a>`;
   });
@@ -180,7 +180,7 @@
     if (profileList.length === 0) {
       studentsContainer.innerHTML = `
         <div class="students-empty">
-          <div class="students-empty-icon">👥</div>
+          <div class="students-empty-icon"><span class="material-symbols-outlined" style="font-size: 48px;">group_off</span></div>
           <p>No intern profiles found. Add an intern using the button above.</p>
         </div>`;
     } else {
@@ -245,9 +245,7 @@
 
           <!-- Expand arrow -->
           <button class="expand-btn" aria-label="Expand student details" tabindex="-1">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
+            <span class="material-symbols-outlined">chevron_right</span>
           </button>
         </div>
 
@@ -263,22 +261,22 @@
                   <div class="meta-badges-vertical">
                     ${profile.location ? `
                     <div class="hero-meta-item">
-                      <span class="meta-icon">📍</span>
+                      <span class="material-symbols-outlined" style="font-size:16px; color:var(--clr-accent)">location_on</span>
                       <span class="meta-text">${profile.location}</span>
                     </div>` : ''}
                     ${profile.email ? `
                     <div class="hero-meta-item">
-                      <span class="meta-icon">✉️</span>
+                      <span class="material-symbols-outlined" style="font-size:16px; color:var(--clr-accent)">mail</span>
                       <span class="meta-text">${profile.email}</span>
                     </div>` : ''}
                     ${profile.socialLinks?.github ? `
                     <a class="hero-meta-item clickable" href="${profile.socialLinks.github}" target="_blank">
-                      <span class="meta-icon">🔗</span>
+                      <span class="material-symbols-outlined" style="font-size:16px; color:var(--clr-accent)">link</span>
                       <span class="meta-text">GitHub Profile</span>
                     </a>` : ''}
                     ${profile.socialLinks?.linkedin ? `
                     <a class="hero-meta-item clickable" href="${profile.socialLinks.linkedin}" target="_blank">
-                      <span class="meta-icon">💼</span>
+                      <span class="material-symbols-outlined" style="font-size:16px; color:var(--clr-accent)">work</span>
                       <span class="meta-text">LinkedIn Profile</span>
                     </a>` : ''}
                   </div>
@@ -338,11 +336,11 @@
                     ${projects.length > 1 ? `
                     <div class="project-nav-container">
                       <button class="nav-arrow nav-arrow-sm" onclick="event.stopPropagation(); prevAdminProj('${profile.userId}')" title="Previous Project">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"/></svg>
+                        <span class="material-symbols-outlined" style="font-size:16px;">chevron_left</span>
                       </button>
                       <span class="project-counter">${(projectIndices[profile.userId] || 0) + 1} / ${projects.length}</span>
                       <button class="nav-arrow nav-arrow-sm" onclick="event.stopPropagation(); nextAdminProj('${profile.userId}')" title="Next Project">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                        <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
                       </button>
                     </div>` : ''}
                   </div>
@@ -386,12 +384,20 @@
               <!-- Footer Actions -->
               <div class="detail-edit-row">
                 <div class="detail-actions-left">
-                  <button onclick="event.stopPropagation(); suspendStudent('${profile.userId}')" class="btn btn-warning btn-sm btn-magnetic">🚫 Suspend</button>
-                  <button onclick="event.stopPropagation(); deleteStudent('${profile.userId}')" class="btn btn-danger btn-sm btn-magnetic">🗑️ Delete</button>
+                  <button onclick="event.stopPropagation(); suspendStudent('${profile.userId}')" class="btn btn-warning btn-sm btn-magnetic">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">block</span> Suspend
+                  </button>
+                  <button onclick="event.stopPropagation(); deleteStudent('${profile.userId}')" class="btn btn-danger btn-sm btn-magnetic">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">delete</span> Delete
+                  </button>
                 </div>
                 <div class="detail-actions-right">
-                  <a href="profile-builder.html?student=${profile.userId}" class="btn btn-secondary btn-sm btn-magnetic">✏️ Edit Profile</a>
-                  <a href="student-analytics.html?student=${profile.userId}" class="btn btn-primary btn-sm btn-magnetic">📊 Analytics</a>
+                  <a href="profile-builder.html?student=${profile.userId}" class="btn btn-secondary btn-sm btn-magnetic">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">edit</span> Edit Profile
+                  </a>
+                  <a href="student-analytics.html?student=${profile.userId}" class="btn btn-primary btn-sm btn-magnetic">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">analytics</span> Analytics
+                  </a>
                 </div>
               </div>
 

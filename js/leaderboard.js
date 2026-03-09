@@ -61,18 +61,18 @@
 
     // ── Sidebar Nav ──
     const NAV_ADMIN = [
-        { label: 'Dashboard', href: 'dashboard.html', icon: '⊞' },
-        { label: 'My Profile', href: 'admin-profile.html', icon: '👤' },
-        { label: 'Interns', href: 'students.html', icon: '👥' },
-        { label: 'Leaderboard', href: 'leaderboard.html', icon: '🏆', active: true },
-        { label: 'Projects', href: 'projects.html', icon: '🗂️' },
+        { label: 'Dashboard', href: 'dashboard.html', icon: 'grid_view' },
+        { label: 'My Profile', href: 'admin-profile.html', icon: 'person' },
+        { label: 'Interns', href: 'students.html', icon: 'group' },
+        { label: 'Leaderboard', href: 'leaderboard.html', icon: 'leaderboard', active: true },
+        { label: 'Projects', href: 'projects.html', icon: 'folder' },
     ];
     const NAV_INTERN = [
-        { label: 'Dashboard', href: 'dashboard.html', icon: '⊞' },
-        { label: 'My Profile', href: 'student-profile.html', icon: '👤' },
-        { label: 'Leaderboard', href: 'leaderboard.html', icon: '🏆', active: true },
-        { label: 'My Analytics', href: `student-analytics.html?student=${session.userId}`, icon: '📊' },
-        { label: 'Projects', href: 'projects.html', icon: '🗂️' },
+        { label: 'Dashboard', href: 'dashboard.html', icon: 'grid_view' },
+        { label: 'My Profile', href: 'student-profile.html', icon: 'person' },
+        { label: 'Leaderboard', href: 'leaderboard.html', icon: 'leaderboard', active: true },
+        { label: 'My Analytics', href: `student-analytics.html?student=${session.userId}`, icon: 'analytics' },
+        { label: 'Projects', href: 'projects.html', icon: 'folder' },
     ];
 
     const navItems = isAdmin ? NAV_ADMIN : NAV_INTERN;
@@ -80,7 +80,7 @@
     navItems.forEach(item => {
         navHTML += `
           <a class="nav-item${item.active ? ' active' : ''}" href="${item.href}" aria-current="${item.active ? 'page' : 'false'}">
-            <span class="nav-icon" aria-hidden="true">${item.icon}</span>
+            <span class="nav-icon" aria-hidden="true"><span class="material-symbols-outlined">${item.icon}</span></span>
             <span>${item.label}</span>
           </a>`;
     });
@@ -92,31 +92,12 @@
     const now = Date.now();
     const internList = Object.values(profiles).filter(p => !p.suspendedUntil || p.suspendedUntil < now);
 
-    function computeScore(p) {
-        let score = 50;
-        if (p.skills?.length) score += Math.min(p.skills.length * 3, 20);
-        if (p.bio?.length > 40) score += 10;
-        if (p.internship?.company) score += 10;
-        if (p.avatar) score += 5;
-        if (p.socialLinks?.github) score += 2;
-        if (p.socialLinks?.linkedin) score += 3;
-        return Math.min(score, 100);
-    }
-
-    function computeRating(score) {
-        return parseFloat((score / 20).toFixed(1));
-    }
-
-    function getProjectsForIntern(userId) {
-        return projects.filter(p => String(p.ownerId) === String(userId));
-    }
-
     const enriched = internList.map(p => {
-        const myProjects = getProjectsForIntern(p.userId);
+        const myProjects = projects.filter(proj => String(proj.ownerId) === String(p.userId));
         const liveCount = myProjects.filter(pr => pr.liveLink && pr.liveLink.trim()).length;
         const demoCount = myProjects.filter(pr => !pr.liveLink || !pr.liveLink.trim()).length;
-        const score = computeScore(p);
-        const rating = computeRating(score);
+        const score = Storage.computeInternScore(p);
+        const rating = parseFloat((score / 20).toFixed(1));
         return { ...p, score, rating, liveCount, demoCount, totalProjects: myProjects.length };
     });
 
@@ -127,10 +108,10 @@
     let searchQuery = '';
 
     const FILTERS = {
-        overall: { sort: (a, b) => (b.score - a.score) || a.name.localeCompare(b.name), label: 'All Overall', icon: '⭐', header: 'Score' },
-        demo: { sort: (a, b) => (b.demoCount - a.demoCount) || a.name.localeCompare(b.name), label: 'Demo Projects', icon: '🔬', header: 'Demo Projects' },
-        live: { sort: (a, b) => (b.liveCount - a.liveCount) || a.name.localeCompare(b.name), label: 'Live Projects', icon: '🚀', header: 'Live Projects' },
-        rating: { sort: (a, b) => (b.rating - a.rating) || a.name.localeCompare(b.name), label: 'Rating Based', icon: '💯', header: 'Rating' },
+        overall: { sort: (a, b) => (b.score - a.score) || a.name.localeCompare(b.name), label: 'All Overall', icon: 'stars', header: 'Score' },
+        demo: { sort: (a, b) => (b.demoCount - a.demoCount) || a.name.localeCompare(b.name), label: 'Demo Projects', icon: 'science', header: 'Demo Projects' },
+        live: { sort: (a, b) => (b.liveCount - a.liveCount) || a.name.localeCompare(b.name), label: 'Live Projects', icon: 'rocket_launch', header: 'Live Projects' },
+        rating: { sort: (a, b) => (b.rating - a.rating) || a.name.localeCompare(b.name), label: 'Rating Based', icon: 'grade', header: 'Rating' },
     };
 
     function getFilteredAndSortedData() {
@@ -193,7 +174,7 @@
     function renderTable(sorted) {
         if (!tableBody) return;
         if (!sorted.length) {
-            tableBody.innerHTML = `<div class="lb-empty"><div class="lb-empty-icon">🔍</div><p>No interns found matching "${searchQuery}"</p></div>`;
+            tableBody.innerHTML = `<div class="lb-empty"><div class="lb-empty-icon"><span class="material-symbols-outlined" style="font-size: 40px;">search_off</span></div><p>No interns found matching "${searchQuery}"</p></div>`;
             return;
         }
 
@@ -202,7 +183,7 @@
         const rest = isRestricted ? sorted.slice(3) : sorted;
 
         if (!rest.length && sorted.length > 0) {
-            tableBody.innerHTML = `<div class="lb-empty"><div class="lb-empty-icon">🎯</div><p>All interns are on the podium!</p></div>`;
+            tableBody.innerHTML = `<div class="lb-empty"><div class="lb-empty-icon"><span class="material-symbols-outlined" style="font-size: 40px;">emoji_events</span></div><p>All interns are on the podium!</p></div>`;
             return;
         }
 
@@ -285,7 +266,10 @@
             if (filter !== currentFilter) {
                 // Update Labels
                 const filterData = FILTERS[filter];
-                if (currentFilterIcon) currentFilterIcon.textContent = filterData.icon;
+                if (currentFilterIcon) {
+                    currentFilterIcon.textContent = filterData.icon;
+                    currentFilterIcon.className = 'material-symbols-outlined';
+                }
                 if (currentFilterLabel) currentFilterLabel.textContent = filterData.label;
 
                 // Mark Active

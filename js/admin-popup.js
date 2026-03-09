@@ -27,14 +27,14 @@ const AdminPopup = (() => {
         });
 
         const adminCapabilities = [
-            { icon: '✏️', label: 'Profile Builder', desc: 'Create & edit intern profiles' },
-            { icon: '🎓', label: 'Student Management', desc: 'View all intern details' },
-            { icon: '🗂️', label: 'Project Oversight', desc: 'Monitor all project submissions' },
+            { icon: 'edit', label: 'Profile Builder', desc: 'Create & edit intern profiles' },
+            { icon: 'school', label: 'Student Management', desc: 'View all intern details' },
+            { icon: 'folder_shared', label: 'Project Oversight', desc: 'Monitor all project submissions' },
         ];
 
         const internCapabilities = [
-            { icon: '👤', label: 'My Profile', desc: 'View your own portfolio' },
-            { icon: '🗂️', label: 'Projects', desc: 'Submit & manage your projects' },
+            { icon: 'person', label: 'My Profile', desc: 'View your own portfolio' },
+            { icon: 'folder', label: 'Projects', desc: 'Submit & manage your projects' },
         ];
 
         const caps = isAdmin ? adminCapabilities : internCapabilities;
@@ -47,7 +47,8 @@ const AdminPopup = (() => {
                 <div class="apop-name">${currentName}</div>
                 <div class="apop-email">${session.email}</div>
                 <span class="apop-badge ${isAdmin ? 'apop-badge-admin' : 'apop-badge-user'}">
-                    ${isAdmin ? '🛡️ Administrator' : '🎓 Intern'}
+                    <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">${isAdmin ? 'shield' : 'school'}</span>
+                    ${isAdmin ? 'Administrator' : 'Intern'}
                 </span>
             </div>
         </div>
@@ -56,7 +57,7 @@ const AdminPopup = (() => {
         <ul class="apop-caps">
             ${caps.map(c => `
             <li class="apop-cap-item">
-                <span class="apop-cap-icon" aria-hidden="true">${c.icon}</span>
+                <span class="apop-cap-icon material-symbols-outlined" aria-hidden="true">${c.icon}</span>
                 <div>
                     <div class="apop-cap-label">${c.label}</div>
                     <div class="apop-cap-desc">${c.desc}</div>
@@ -65,15 +66,11 @@ const AdminPopup = (() => {
         </ul>
         <div class="apop-divider"></div>
         <div class="apop-meta">
-            <span class="apop-meta-icon" aria-hidden="true">🕐</span>
+            <span class="apop-meta-icon material-symbols-outlined" aria-hidden="true" style="font-size: 14px; vertical-align: middle;">schedule</span>
             Logged in: ${loginDate}
         </div>
         <button class="apop-signout-btn" id="apop-signout-btn" aria-label="Sign out">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
+            <span class="material-symbols-outlined" style="font-size: 16px;">logout</span>
             Sign Out
         </button>`;
     }

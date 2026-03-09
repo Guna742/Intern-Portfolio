@@ -7,6 +7,12 @@
     <title>I.R.I.S — Dashboard</title>
     <meta name="description" content="I.R.I.S dashboard: role-based workspace for admins and interns.">
     <link rel="stylesheet" href="css/dashboard.css">
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
 </head>
 
 <body>
@@ -20,7 +26,21 @@
         <aside class="app-sidebar" id="app-sidebar" role="navigation" aria-label="Main navigation">
             <div class="sidebar-brand">
                 <div class="sidebar-logo" aria-hidden="true">
-                    <img src="img/iris-logo.png" alt="IRIS Logo">
+                    <svg class="iris-vector-logo" viewBox="0 0 100 70" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        style="width: 100%; height: 100%; padding: 6px;">
+                        <path d="M5 35C5 35 25 5 50 5C75 5 95 35 95 35C95 35 75 65 50 65C25 65 5 35 5 35Z"
+                            stroke="currentColor" stroke-width="5" stroke-linejoin="round" />
+                        <circle cx="50" cy="35" r="20" stroke="currentColor" stroke-width="4" />
+                        <circle cx="50" cy="35" r="11" stroke="currentColor" stroke-width="3" />
+                        <circle cx="50" cy="35" r="5" fill="currentColor" />
+                        <line x1="36" y1="49" x2="64" y2="21" stroke="currentColor" stroke-width="3" />
+                        <circle cx="36" cy="49" r="3" fill="var(--glass-bg, #000)" stroke="currentColor"
+                            stroke-width="2.5" />
+                        <circle cx="64" cy="21" r="3" fill="var(--glass-bg, #000)" stroke="currentColor"
+                            stroke-width="2.5" />
+                        <circle cx="58" cy="43" r="3" fill="var(--glass-bg, #000)" stroke="currentColor"
+                            stroke-width="2.5" />
+                    </svg>
                 </div>
                 <div class="sidebar-brand-text">
                     <span class="sidebar-title">I.R.I.S</span>
@@ -49,32 +69,17 @@
             <div class="container flex-between" style="height:100%">
                 <div class="topbar-left">
                     <button id="hamburger-btn" aria-label="Toggle sidebar" aria-expanded="false">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" aria-hidden="true">
-                            <line x1="3" y1="6" x2="21" y2="6" />
-                            <line x1="3" y1="12" x2="21" y2="12" />
-                            <line x1="3" y1="18" x2="21" y2="18" />
-                        </svg>
+                        <span class="material-symbols-outlined">menu</span>
                     </button>
                     <span class="topbar-title" id="topbar-title">Dashboard</span>
                 </div>
                 <div class="topbar-right">
                     <button class="info-btn" id="info-btn" aria-label="Platform information">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10" />
-                            <line x1="12" y1="16" x2="12" y2="12" />
-                            <line x1="12" y1="8" x2="12.01" y2="8" />
-                        </svg>
+                        <span class="material-symbols-outlined" style="font-size: 20px;">info</span>
                     </button>
                     <span class="badge badge-admin" id="topbar-role-badge">Admin</span>
                     <button class="btn btn-secondary btn-sm" id="logout-btn" aria-label="Sign out">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" aria-hidden="true">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                            <polyline points="16 17 21 12 16 7" />
-                            <line x1="21" y1="12" x2="9" y2="12" />
-                        </svg>
+                        <span class="material-symbols-outlined" style="font-size: 18px;">logout</span>
                         Sign Out
                     </button>
                 </div>
@@ -86,7 +91,8 @@
             <div class="container" data-reveal data-stagger>
                 <!-- Role banner -->
                 <div class="role-banner anim-reveal" id="role-banner">
-                    <span class="role-banner-icon" aria-hidden="true">👋</span>
+                    <span class="role-banner-icon material-symbols-outlined" aria-hidden="true"
+                        style="font-size: 32px; color: var(--clr-accent);">waving_hand</span>
                     <div class="role-banner-text">
                         <div class="role-banner-title" id="welcome-title">Welcome back!</div>
                         <div class="role-banner-sub" id="welcome-sub">Your workspace is ready.</div>
@@ -123,6 +129,16 @@
                             <!-- Injected by JS -->
                         </div>
                     </div>
+
+                    <!-- Recent reports (Admin only) -->
+                    <div class="dash-card anim-fadeInUp anim-d4" id="reports-card" style="display: none;">
+                        <div class="dash-card-header">
+                            <h2 class="dash-card-title">Recent Activity Reports</h2>
+                        </div>
+                        <div class="dash-card-body" id="recent-reports-list">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -132,7 +148,7 @@
     <div class="toast-container" id="toast-container" aria-live="polite"></div>
 
     <script src="js/page-transition.js"></script>
-    <script src="js/auth.js"></script>
+
     <script src="js/storage.js"></script>
     <script src="js/admin-popup.js"></script>
     <script src="js/dashboard.js"></script>

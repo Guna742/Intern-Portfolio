@@ -251,10 +251,16 @@ body::after {
    ══════════════════════════════════════ */
 .charts-row {
     display: grid;
-    grid-template-columns: 1fr 380px;
+    grid-template-columns: 1fr 1fr;
     gap: 24px;
     align-items: start;
     margin-bottom: 24px;
+}
+
+@media (max-width: 1024px) {
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Chart widget */
@@ -330,6 +336,42 @@ body::after {
     color: var(--clr-text-primary);
 }
 
+/* Time range filters */
+.filter-group {
+    display: flex;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 3px;
+    border-radius: 99px;
+    border: 1px solid var(--clr-border);
+    margin-left: auto;
+}
+
+.filter-btn {
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--clr-text-muted);
+    transition: all var(--transition);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.filter-btn.active {
+    background: var(--clr-purple);
+    color: #fff;
+    box-shadow: 0 0 12px var(--clr-purple-glow);
+}
+
+.filter-btn:not(.active):hover {
+    color: var(--clr-text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
 
 /* SVG Line Chart */
 .line-chart-wrap {
@@ -388,6 +430,8 @@ body::after {
     display: flex;
     justify-content: space-between;
     padding-top: 8px;
+    padding-left: 36px;
+    padding-right: 20px;
     font-size: var(--fs-xs);
     color: var(--clr-text-muted);
 }
@@ -945,5 +989,125 @@ body::after {
         padding-left: 36px;
         padding-right: 20px;
         font-size: 9px;
+    }
+
+    /* ══════════════════════════════════════
+   PROJECT DETAIL MODAL
+   ══════════════════════════════════════ */
+    .project-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(10, 12, 20, 0.85);
+    }
+
+    /* ══════════════════════════════════════
+   EXPANDABLE TABLE ROWS
+   ══════════════════════════════════════ */
+    .expandable-details-row {
+        background: rgba(139, 92, 246, 0.03);
+    }
+
+    .expandable-details-row td {
+        padding: 0 !important;
+        border-bottom: 1px solid rgba(139, 92, 246, 0.15) !important;
+    }
+
+    .expanded-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .expandable-details-row.active .expanded-content {
+        max-height: 500px;
+    }
+
+    .expanded-inner {
+        padding: 24px 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        background: linear-gradient(180deg, rgba(8, 10, 20, 0.4) 0%, transparent 100%);
+    }
+
+    .detail-block {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .detail-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--clr-purple-light);
+        opacity: 0.8;
+    }
+
+    .detail-text {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: var(--clr-text-secondary);
+        margin: 0;
+        white-space: pre-wrap;
+    }
+
+    .detail-meta-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .rating-box {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .rating-score {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--clr-text-primary);
+    }
+
+    .rating-stars {
+        color: var(--clr-amber);
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+    }
+
+    .detail-trigger {
+        min-width: 120px;
+    }
+
+    .detail-trigger:hover {
+        border-color: var(--clr-purple-light);
+        background: rgba(139, 92, 246, 0.1);
+    }
+
+    @media (max-width: 1024px) {
+
+        .history-table th:nth-child(3),
+        .history-table td:nth-child(3) {
+            display: none;
+            /* Hide preview column on tablets */
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .detail-meta-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .expanded-inner {
+        padding: 20px;
     }
 }

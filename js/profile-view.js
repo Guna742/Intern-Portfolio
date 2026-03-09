@@ -35,7 +35,7 @@
     loading.remove();
     if (!p) {
       content.innerHTML = `<div class="empty-state">
-        <div class="empty-icon">👤</div>
+        <div class="empty-icon"><span class="material-symbols-outlined" style="font-size: 48px;">person_off</span></div>
         <div class="empty-title">Profile Not Found</div>
         <div class="empty-desc">The admin has not created your profile yet.</div>
       </div>`;
@@ -70,15 +70,15 @@
           <p class="hero-tagline">${p.tagline || 'Software Engineering Intern'}</p>
           <div class="hero-meta" aria-label="Contact details">
             ${p.location ? `<span class="hero-meta-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span class="material-symbols-outlined" style="font-size: 14px;">location_on</span>
               ${p.location}
             </span>` : ''}
             ${p.email ? `<span class="hero-meta-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <span class="material-symbols-outlined" style="font-size: 14px;">mail</span>
               ${p.email}
             </span>` : ''}
             ${intern.company ? `<span class="hero-meta-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="2"/><line x1="15" y1="22" x2="15" y2="2"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+              <span class="material-symbols-outlined" style="font-size: 14px;">domain</span>
               ${intern.company}
             </span>` : ''}
             ${links.github ? `<a class="hero-meta-item" href="${links.github}" target="_blank" rel="noopener" aria-label="GitHub profile">
@@ -92,7 +92,7 @@
           </div>
 
         </div>
-        ${isAdmin ? `<a href="profile-builder.html" class="btn btn-secondary btn-sm" aria-label="Edit profile in builder">✏️ Edit Profile</a>` : ''}
+        ${isAdmin ? `<a href="profile-builder.html" class="btn btn-secondary btn-sm" aria-label="Edit profile in builder"><span class="material-symbols-outlined" style="font-size: 16px;">edit</span> Edit Profile</a>` : ''}
       </section>
 
       <!-- Main grid -->
@@ -103,7 +103,7 @@
           <!-- Bio -->
           <section class="profile-section reveal anim-d1" aria-label="About">
             <div class="section-head">
-              <div class="section-icon" style="background:rgba(79,124,255,.12)" aria-hidden="true">📄</div>
+              <div class="section-icon" style="background:rgba(79,124,255,.12)" aria-hidden="true"><span class="material-symbols-outlined" style="color:var(--clr-blue)">description</span></div>
               <h2 class="section-title">About</h2>
             </div>
             <div class="section-body">
@@ -114,7 +114,7 @@
           <!-- Skills -->
           <section class="profile-section reveal anim-d2" aria-label="Skills">
             <div class="section-head">
-              <div class="section-icon" style="background:rgba(34,211,238,.1)" aria-hidden="true">⚡</div>
+              <div class="section-icon" style="background:rgba(34,211,238,.1)" aria-hidden="true"><span class="material-symbols-outlined" style="color:var(--clr-cyan)">bolt</span></div>
               <h2 class="section-title">Technical Skills</h2>
             </div>
             <div class="section-body">
@@ -130,7 +130,7 @@
           <!-- Internship -->
           <section class="profile-section reveal anim-d3" aria-label="Internship experience">
             <div class="section-head">
-              <div class="section-icon" style="background:rgba(168,85,247,.1)" aria-hidden="true">🏢</div>
+              <div class="section-icon" style="background:rgba(168,85,247,.1)" aria-hidden="true"><span class="material-symbols-outlined" style="color:var(--clr-violet)">domain</span></div>
               <h2 class="section-title">Internship Experience</h2>
             </div>
             <div class="section-body">
@@ -158,7 +158,7 @@
         <div>
           <section class="profile-section reveal anim-d2" aria-label="Contact information">
             <div class="section-head">
-              <div class="section-icon" style="background:rgba(16,185,129,.1)" aria-hidden="true">📋</div>
+              <div class="section-icon" style="background:rgba(16,185,129,.1)" aria-hidden="true"><span class="material-symbols-outlined" style="color:var(--clr-success)">assignment</span></div>
               <h2 class="section-title">Details</h2>
             </div>
             <div class="section-body">
@@ -202,7 +202,7 @@
 
           <!-- Projects shortcut -->
           <div class="profile-section reveal anim-d3" style="text-align:center;padding:var(--sp-6)">
-            <div style="font-size:2rem;margin-bottom:var(--sp-3)" aria-hidden="true">🗂️</div>
+            <div style="font-size:2rem;margin-bottom:var(--sp-3)" aria-hidden="true"><span class="material-symbols-outlined" style="font-size: 40px; color:var(--clr-blue)">folder</span></div>
             <div style="font-weight:var(--fw-semi);margin-bottom:var(--sp-2)">Project Portfolio</div>
             <div class="text-muted text-sm" style="margin-bottom:var(--sp-4)">Browse all ${Storage.getProjects().length} projects</div>
             <a href="projects.html" class="btn btn-primary btn-sm" style="width:100%">View Projects</a>
@@ -253,17 +253,17 @@
     if (roleEl) roleEl.textContent = isAdmin ? (p?.role || 'Administrator') : 'Intern';
 
     const items = [
-      { label: 'Dashboard', href: 'dashboard.html', icon: '⊞' },
-      { label: 'My Profile', href: session.role === 'admin' ? 'admin-profile.html' : 'profile-view.html', icon: '👤' },
-      ...(session.role === 'admin' ? [{ label: 'Interns', href: 'students.html', icon: '👥' }] : []),
-      { label: 'Projects', href: 'projects.html', icon: '🗂️' },
+      { label: 'Dashboard', href: 'dashboard.html', icon: 'grid_view' },
+      { label: 'My Profile', href: session.role === 'admin' ? 'admin-profile.html' : 'profile-view.html', icon: 'person' },
+      ...(session.role === 'admin' ? [{ label: 'Interns', href: 'students.html', icon: 'group' }] : []),
+      { label: 'Projects', href: 'projects.html', icon: 'folder' },
     ];
 
     if (nav) {
       nav.innerHTML = '<div class="nav-section-label">Menu</div>' +
         items.map(item => `
           <a class="nav-item${item.href === activePage ? ' active' : ''}" href="${item.href}" aria-current="${item.href === activePage ? 'page' : 'false'}">
-            <span class="nav-icon" aria-hidden="true">${item.icon}</span>
+            <span class="nav-icon" aria-hidden="true"><span class="material-symbols-outlined">${item.icon}</span></span>
             <span>${item.label}</span>
           </a>`).join('');
     }

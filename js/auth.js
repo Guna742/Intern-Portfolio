@@ -1,7 +1,7 @@
 /**
- * I.R.I.S — Auth Module
+ * I.R.I.S — Auth Module (Firebase-backed)
  * Central authentication & session management.
- * All role checks and redirects go through here.
+ * Uses Firebase Auth + Firestore (compat SDK via CDN).
  */
 
 'use strict';
@@ -9,43 +9,72 @@
 const Auth = (() => {
   const SESSION_KEY = 'iris_session';
 
-  // ── Hardcoded demo users ──
-  const USERS = [
-    { id: 'u_admin', email: 'admin@iris.com', password: 'admin123', role: 'admin', displayName: 'Alex Morgan' },
-    { id: 'u_intern1', email: 'intern@iris.com', password: 'intern123', role: 'user', displayName: 'Jordan Lee' },
-    { id: 'u_intern2', email: 'guest@iris.com', password: 'guest123', role: 'user', displayName: 'Casey Rivera' },
-  ];
-
-  /**
-   * Attempt login.
-   * @param {string} email
-   * @param {string} password
-   * @param {string} role — 'admin' | 'user'
-   * @returns {{ success: boolean, user?: object, error?: string }}
-   */
-  function login(email, password, role) {
-    const user = USERS.find(
-      u => u.email === email.trim().toLowerCase() &&
-        u.password === password &&
-        u.role === role
-    );
-    if (!user) {
-      return { success: false, error: 'Invalid credentials. Please check your email, password and role.' };
-    }
+  // ── Persist session to localStorage after Firebase sign-in ──
+  function _persistSession(firebaseUser, role, displayName) {
     const session = {
-      userId: user.id,
-      email: user.email,
-      displayName: user.displayName,
-      role: user.role,
+      userId: firebaseUser.uid,
+      email: firebaseUser.email,
+      displayName: displayName || firebaseUser.displayName || firebaseUser.email.split('@')[0],
+      role: role,
       loginTime: Date.now(),
     };
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session)); // persist across tabs
-    return { success: true, user: session };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    return session;
   }
 
+  /**
+   * Attempt login using Firebase Auth.
+   * @param {string} email
+   * @param {string} password
+   * @param {string} role — 'admin' | 'user'
+   * @returns {Promise<{ success: boolean, user?: object, error?: string }>}
+   */
+  async function login(email, password, role) {
+    try {
+      const cred = await fbAuth.signInWithEmailAndPassword(email.trim().toLowerCase(), password);
+      const firebaseUser = cred.user;
+
+      // Look up role from Firestore
+      let storedRole = role;
+      let displayName = firebaseUser.displayName || '';
+      try {
+        const doc = await fbDb.collection('users').doc(firebaseUser.uid).get();
+        if (doc.exists) {
+          const data = doc.data();
+          storedRole = data.role || role;
+          displayName = data.displayName || displayName;
+        }
+      } catch (_) { /* ignore Firestore errors, fall back to selected role */ }
+
+      // Verify role matches what the user selected
+      if (storedRole !== role) {
+        await fbAuth.signOut();
+        return { success: false, error: `This account is not registered as ${role === 'admin' ? 'an Admin' : 'an Intern'}. Please select the correct role.` };
+      }
+
+      const session = _persistSession(firebaseUser, storedRole, displayName);
+      return { success: true, user: session };
+
+    } catch (err) {
+      console.error('Login error:', err);
+      let msg = 'Sign in failed. Please try again.';
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        msg = 'Invalid email or password. Please check your credentials.';
+      } else if (err.code === 'auth/too-many-requests') {
+        msg = 'Too many failed attempts. Please try again later.';
+      } else if (err.code === 'auth/invalid-email') {
+        msg = 'Please enter a valid email address.';
+      }
+      return { success: false, error: msg };
+    }
+  }
+
+
+
   /** Clear session and redirect to login. */
-  function logout() {
+  async function logout() {
+    try { await fbAuth.signOut(); } catch (_) { }
     sessionStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(SESSION_KEY);
     window.location.href = 'login.html';
@@ -79,8 +108,7 @@ const Auth = (() => {
 
   /**
    * Guard: require auth. If not authenticated, redirect to login.
-   * If allowedRoles provided, also check role.
-   * @param {string[]} [allowedRoles] — optional whitelist of roles
+   * @param {string[]} [allowedRoles]
    */
   function requireAuth(allowedRoles) {
     const session = getSession();
@@ -89,20 +117,38 @@ const Auth = (() => {
       return null;
     }
     if (allowedRoles && !allowedRoles.includes(session.role)) {
-      // Role not allowed — redirect to dashboard
-      window.location.replace('dashboard.html');
+      redirectByRole(); // Smart redirect based on role
       return null;
     }
     return session;
   }
 
-  /** Redirect authenticated users to their correct dashboard. */
+  /** Redirect authenticated users away from login page or on auth failure. */
   function redirectByRole() {
     const session = getSession();
     if (session) {
-      window.location.replace('dashboard.html');
+      if (session.role === 'admin') {
+        window.location.replace('dashboard.html');
+      } else {
+        window.location.replace('dashboard.html');
+      }
+    } else {
+      window.location.replace('login.html');
     }
   }
+
+  // ── Automatic Auth Guard ──
+  // Triggers immediately when Auth module loads to prevent unauthorized access
+  (() => {
+    const path = window.location.pathname;
+    const isLoginPage = path.endsWith('login.html');
+    const session = getSession();
+
+    if (!isLoginPage && !session) {
+      // Not on login page & not logged in -> redirect to login
+      window.location.replace('login.html');
+    }
+  })();
 
   return { login, logout, getSession, getRole, isAuthenticated, isAdmin, requireAuth, redirectByRole };
 })();
